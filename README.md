@@ -1,9 +1,10 @@
 # Seatlock — Proyek Mini RPC: Reservasi Tiket Bioskop
 
-Studi kasus 1 dari modul: beberapa client memesan kursi yang sama secara
-bersamaan. Dibangun dengan gRPC, plus tampilan web tipis lewat gateway
-HTTP → gRPC. Web hanya perantara; seluruh logika (lock, deduplikasi,
-streaming) tetap di server gRPC.
+Seatlock adalah aplikasi web reservasi tiket bioskop berbasis gRPC.
+Tampilannya dibuat seperti web publik yang layak digunakan: pilih film
+dan jadwal, pilih kursi di peta, terima kode booking, dan batalkan
+dengan kode itu. Di balik tampilannya, seluruh logika tetap di server
+gRPC — web hanya perantara lewat gateway HTTP → gRPC.
 
 Kelompok:
 - Muhammad Fariez Riziq Ilham — 247006111146
@@ -13,32 +14,58 @@ Kelompok:
 ## Arsitektur
 
 ```
-Browser ──HTTP──> Gateway (web/gateway.py, pustaka standar saja)
-                       │ gRPC
-                       v
-                  Server gRPC (server/server.py, port 50051)
-                       │ gRPC (juga dipakai langsung)
-                       v
-                  Client CLI (client/client.py) + uji beban
+Browser (index.html, desain publik: kartu film, peta kursi, ringkasan)
+   |  HTTP (REST sederhana)
+   v
+Web Gateway (web/gateway.py, pustaka standar saja)
+   |  gRPC
+   v
+Server gRPC (server/server.py, port 50051)
+   |  SQL (transaksi + constraint unik)
+   v
+SQLite (server/seatlock.db, dibuat otomatis saat pertama dijalankan)
+   |  gRPC (juga dipakai langsung)
+   v
+Client CLI (client/client.py) + uji beban
 ```
 
-Server menyimpan 20 kursi (A1–A10, B1–B10) di memori, dilindungi satu
-`threading.Lock`. Operasi pesan/batal yang tidak idempoten dilindungi
-`request_id` yang dicatat di tabel `proses` (semantik at-most-once,
-seperti `PROSES` di Praktikum 3). Restart server menghilangkan state —
-batasan ini ditulis jujur di laporan; perbaikannya adalah menyimpan state
-dan tabel deduplikasi di database dengan transaksi atomik.
+Server menyimpan state di SQLite, bukan lagi di memori. Restart server
+TIDAK menghilangkan pesanan maupun tabel deduplikasi. Berkas database
+(`seatlock.db`, plus `-wal`/`-shm` saat berjalan) sengaja TIDAK di-commit
+ke Git — tiap mesin membuat databasenya sendiri saat pertama dijalankan,
+lalu di-seed dengan jadwal preset di bawah.
+
+## Jadwal tayang preset
+
+| Kode | Film | Waktu | Studio |
+|---|---|---|---|
+| J1 | Petualangan Langit | 14:00 | Studio 1 |
+| J2 | Kota Senja | 17:00 | Studio 1 |
+| J3 | Malam Bintang | 20:00 | Studio 2 |
+
+Tiap jadwal punya peta kursi sendiri: 20 kursi (A1–A10, B1–B10).
+Tidak ada halaman admin untuk menambah jadwal di versi ini — itu
+disengaja, supaya Tier 1 Ringan tetap sederhana dan mudah didemo.
+Menambah jadwal berarti menambah satu baris preset di server, lalu
+restart server (database yang sudah ada tidak di-seed ulang).
 
 ## Antarmuka (.proto)
 
-`proto/bioskop.proto` — 4 RPC, 1 di antaranya streaming:
+`proto/bioskop.proto` — 5 RPC, 1 di antaranya streaming:
 
 | RPC | Jenis | Fungsi |
 |---|---|---|
-| `PesanKursi` | Unary | Pesan satu kursi, idempoten lewat `request_id` |
-| `BatalkanPesanan` | Unary | Batalkan pesanan sendiri |
-| `LihatKursi` | Unary | Daftar seluruh kursi dan statusnya |
-| `StreamingStatusKursi` | Server streaming | Snapshot status kursi setiap ada perubahan |
+| `DaftarJadwal` | Unary | Daftar jadwal tayang preset |
+| `PesanKursi` | Unary | Pesan satu kursi pada satu jadwal, idempoten lewat `request_id`, mengembalikan `kode_booking` |
+| `BatalkanPesanan` | Unary | Batalkan pesanan sendiri, wajib nama + `kode_booking` yang cocok |
+| `LihatKursi` | Unary | Daftar kursi satu jadwal beserta statusnya |
+| `StreamingStatusKursi` | Server streaming | Snapshot status kursi satu jadwal setiap ada perubahan |
+
+Keamanan kode booking: kode HANYA dikembalikan di `PesanResponse`
+kepada pemesan yang berhasil. `LihatKursi` dan `StreamingStatusKursi`
+tidak pernah membawa kode, supaya kode tidak bisa dicuri dari peta
+kursi. Pesan error pembatalan juga sengaja tidak membedakan "nama
+salah" vs "kode salah", supaya kode tidak bisa ditebak lewat pesan error.
 
 ## Instalasi (Windows, sama seperti praktikum)
 
@@ -79,51 +106,61 @@ Lalu buka `http://localhost:8000/` (atau IP mesin gateway dari mesin kedua).
 Terminal 3 — client CLI (cadangan demo jika web bermasalah):
 
 ```powershell
-python client/client.py lihat
-python client/client.py pesan A3 --nama Budi
-python client/client.py batal A3 --nama Budi
-python client/client.py pantau
+python client/client.py jadwal
+python client/client.py lihat --jadwal J1
+python client/client.py pesan A3 --nama Budi --jadwal J1
+python client/client.py batal A3 --nama Budi --kode ABC123 --jadwal J1
+python client/client.py pantau --jadwal J1
 ```
 
 Untuk client dari mesin kedua, ganti targetnya, misal:
 
 ```powershell
-python client/client.py --target 192.168.1.10:50051 lihat
+python client/client.py --target 192.168.1.10:50051 lihat --jadwal J1
 ```
 
 ## Pengujian
 
-Uji race — 20 client memesan kursi yang sama bersamaan (yang benar:
-tepat 1 berhasil):
+Uji race — 20 client memesan kursi yang sama bersamaan pada satu jadwal
+(yang benar: tepat 1 berhasil):
 
 ```powershell
-python client/client.py race --n 20 --kursi A1
+python client/client.py race --n 20 --kursi A1 --jadwal J2
 ```
 
 Uji kinerja — `LihatKursi` untuk 1, 5, dan 20 client bersamaan
 (masing-masing 200 request):
 
 ```powershell
-python client/client.py beban
+python client/client.py beban --jadwal J1
 ```
 
-### Hasil uji (diukur di VM pengembang, lewat soket lokal)
+Uji persistensi — pesan kursi, hentikan server (Ctrl+C), jalankan lagi,
+lalu `lihat`: pesanan harus masih ada. Uji deduplikasi lintas restart —
+pesan ulang dengan `request_id` yang sama setelah restart harus
+mengembalikan hasil dan kode booking yang sama, bukan pesanan baru.
+
+### Hasil uji (diukur di mesin pengembang, lewat soket lokal)
 
 | Client bersamaan | Throughput | Latensi rata-rata |
 |---|---|---|
-| 1 | 501,09 req/s | 1,79 ms |
-| 5 | 1.034,15 req/s | 4,57 ms |
-| 20 | 1.367,43 req/s | 11,92 ms |
+| 1 | 499,54 req/s | 1,79 ms |
+| 5 | 786,29 req/s | 6,07 ms |
+| 20 | 891,64 req/s | 20,66 ms |
 
-Uji race: 20 client memesan A1 bersamaan → berhasil tepat 1, 19 ditolak.
+Uji race: 20 client memesan A1 pada jadwal J2 bersamaan → berhasil
+tepat 1, 19 ditolak.
 Angka di atas akan berbeda di mesin presentasi; ukur ulang dengan
 `beban` dan `race` di mesin demo dan pakai angka hasil ukur ulang itu di
 laporan, bukan angka tabel ini.
 
-Catatan pengukuran: throughput naik seiring jumlah client karena server
-melayani paralel (max_workers 20), sedangkan latensi per request ikut
-naik karena antrean dan contention lock — ini normal dan harus
-dijelaskan begitu di analisis laporan, bukan disembunyikan.
+Catatan pengukuran: dibanding versi in-memory sebelumnya (1.367 req/s
+pada 20 client), throughput pada 20 client turun menjadi 892 req/s dan
+latensi naik menjadi 20,66 ms. Itu harga yang dibayar untuk persistensi:
+setiap operasi tulis kini melewati transaksi SQLite dan lock yang sama.
+Trade-off ini disengaja dan dijelaskan di laporan — persistensi dinilai
+lebih berharga daripada throughput mentah untuk aplikasi reservasi, dan
+angka ini masih naik seiring jumlah client, bukan runtuh.
 
 ## Aturan penting yang tidak boleh dilanggar
 
@@ -134,30 +171,39 @@ dijelaskan begitu di analisis laporan, bukan disembunyikan.
    supaya gateway tidak timeout duluan saat gRPC masih bekerja.
 3. Uji beban diukur lewat client gRPC langsung, bukan lewat klik browser,
    supaya yang terukur adalah latensi RPC, bukan latensi web + RPC.
+4. Jangan pernah menampilkan `kode_booking` di peta kursi atau di
+   streaming. Kode hanya untuk pemesan yang berhasil.
 
 ## Demo 2 mesin (naskah video, maks. 5 menit)
 
-1. Mesin 1 menjalankan server dan gateway; mesin 2 membuka web dan
-   memesan satu kursi → peta berubah live.
-2. Terminal mesin 2 menjalankan `race --n 20 --kursi A1` → hanya 1
-   berhasil; peta web ikut berubah live.
-3. Terminal menjalankan `beban` → tunjukkan tabel throughput/latensi
+1. Mesin 1 menjalankan server dan gateway; mesin 2 membuka web Seatlock,
+   memilih jadwal, memesan satu kursi, dan menerima kode booking.
+2. Hentikan lalu jalankan lagi server di mesin 1; di web, pesanan tadi
+   masih ada — bukti persistensi SQLite.
+3. Terminal mesin 2 menjalankan `race --n 20 --kursi A1 --jadwal J2` →
+   hanya 1 berhasil; peta web ikut berubah live.
+4. Terminal menjalankan `beban` → tunjukkan tabel throughput/latensi
    untuk 1, 5, dan 20 client.
+5. (Opsional, kalau waktu cukup) Batalkan dengan kode yang salah
+   (ditolak), lalu dengan kode yang benar (berhasil).
 
 ## Pembagian tugas (usulan, sesuaikan dengan commit Git masing-masing)
 
-- Server + proto + lock/dedup: satu anggota.
+- Server + proto + database SQLite: satu anggota.
 - Client CLI + uji beban + uji race: satu anggota.
-- Gateway + halaman web + laporan + diagram + video demo: satu anggota.
+- Gateway + halaman web Seatlock + laporan + diagram + video demo:
+  satu anggota.
 
 Setiap anggota wajib punya riwayat commit sendiri di repositori Git,
-sesuai ketentuan modul.
+sesuai ketentuan modul. Lihat `seatlock-patches.zip` (terpisah dari zip
+ini) untuk pembagian patch per anggota.
 
 ## Pengumpulan
 
 Zip `Kelompok<no>_ProyekRPC.zip` berisi laporan PDF dan seluruh kode
-sumber di folder ini (kecuali `.venv/` dan `__pycache__/`). Laporan
-mencantumkan tautan repositori Git dan tautan video demo, deskripsi
-studi kasus dan diagram arsitektur, isi `.proto` beserta penjelasan
-tiap RPC, strategi concurrency dan toleransi kegagalan, hasil pengujian
-kinerja dan analisisnya, serta pembagian tugas anggota.
+sumber di folder ini (kecuali `.venv/`, `__pycache__/`, dan
+`seatlock.db*`). Laporan mencantumkan tautan repositori Git dan tautan
+video demo, deskripsi studi kasus dan diagram arsitektur, isi `.proto`
+beserta penjelasan tiap RPC, strategi concurrency dan toleransi
+kegagalan, hasil pengujian kinerja dan analisisnya, serta pembagian
+tugas anggota.

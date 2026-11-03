@@ -3,101 +3,314 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Seatlock — Reservasi Tiket Bioskop (gRPC)</title>
+<title>Seatlock — Reservasi Tiket Bioskop</title>
+<meta name="description" content="Seatlock: pilih film, pilih jadwal, pilih kursi, dan simpan kode booking Anda.">
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
-  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin: 1rem 0; }
-  button.kursi { padding: 0.8rem 0.2rem; font-size: 1rem; cursor: pointer; border: 1px solid #888; border-radius: 6px; background: #e8f5e9; }
-  button.kursi.terpesan { background: #ffcdd2; cursor: not-allowed; }
-  button.kursi.terpilih { outline: 3px solid #1565c0; }
-  input { padding: 0.5rem; font-size: 1rem; }
-  #pesan { min-height: 1.5em; font-weight: 600; }
-  small { color: #555; }
+  :root { --indigo:#4338ca; --indigo-dark:#312e81; --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --bg:#f6f7fb; --green:#16a34a; --red:#dc2626; --amber:#b45309; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color:var(--ink); background:var(--bg); line-height:1.5; }
+  a { color:var(--indigo); }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px; }
+  header { position:sticky; top:0; background:#fff; border-bottom:1px solid var(--line); z-index:10; }
+  .nav { display:flex; align-items:center; justify-content:space-between; height:64px; }
+  .logo { font-size:24px; font-weight:800; letter-spacing:-0.02em; color:var(--indigo-dark); text-decoration:none; }
+  .logo span { color:var(--indigo); }
+  .nav-links a { margin-left:20px; text-decoration:none; font-weight:600; color:var(--ink); }
+  .live { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; color:var(--green); }
+  .live i { width:9px; height:9px; border-radius:50%; background:var(--green); display:inline-block; }
+  .hero { background:linear-gradient(135deg, #1e1b4b, #4338ca 65%, #7c3aed); color:#fff; padding:44px 0 36px; }
+  .hero h1 { margin:0 0 10px; font-size:40px; line-height:1.1; letter-spacing:-0.02em; }
+  .hero p { margin:0; max-width:640px; color:#e0e7ff; font-size:18px; }
+  .hero-stats { display:flex; gap:24px; margin-top:22px; flex-wrap:wrap; }
+  .hero-stats div b { display:block; font-size:24px; }
+  .hero-stats div span { color:#c7d2fe; font-size:14px; }
+  section { padding:32px 0 8px; }
+  h2 { font-size:26px; margin:0 0 6px; letter-spacing:-0.01em; }
+  .sub { color:var(--muted); margin:0 0 18px; }
+  .cards { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
+  .film-card { background:#fff; border:1px solid var(--line); border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  .film-banner { height:110px; display:flex; align-items:flex-end; padding:16px; color:#fff; font-weight:800; font-size:22px; }
+  .film-body { padding:16px; }
+  .film-body h3 { margin:0 0 4px; font-size:19px; }
+  .meta { color:var(--muted); font-size:14px; margin:0 0 12px; }
+  .bar { height:8px; background:#eef2ff; border-radius:99px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--indigo); }
+  .occ { font-size:13px; color:var(--muted); margin:6px 0 14px; }
+  button { font:inherit; cursor:pointer; border-radius:10px; border:1px solid transparent; }
+  .btn { background:var(--indigo); color:#fff; font-weight:700; padding:11px 18px; }
+  .btn:hover { background:var(--indigo-dark); }
+  .btn:disabled { opacity:.55; cursor:not-allowed; }
+  .btn-ghost { background:#fff; color:var(--ink); border-color:var(--line); font-weight:700; padding:10px 16px; }
+  .btn-ghost.active { border-color:var(--indigo); color:var(--indigo); background:#eef2ff; }
+  .btn-danger { background:#fff; color:var(--red); border-color:#fecaca; font-weight:700; padding:11px 18px; }
+  .booking { display:grid; grid-template-columns:1.5fr 1fr; gap:20px; align-items:start; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
+  .panel h3 { margin:0 0 4px; font-size:20px; }
+  .screen { margin:18px 0 20px; text-align:center; }
+  .screen div { background:linear-gradient(180deg, #c7d2fe, #eef2ff); border-radius:0 0 120px 120px; padding:10px; font-weight:800; letter-spacing:.2em; color:#3730a3; font-size:13px; }
+  .seat-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .row-label { width:22px; font-weight:800; color:var(--muted); }
+  .seat-grid { display:grid; grid-template-columns:repeat(10, 1fr); gap:8px; flex:1; }
+  .seat { aspect-ratio:1; border:1px solid #a5b4fc; background:#fff; border-radius:9px; font-weight:700; font-size:13px; padding:0; }
+  .seat:hover:not(:disabled) { border-color:var(--indigo); background:#eef2ff; }
+  .seat.selected { background:var(--indigo); color:#fff; border-color:var(--indigo); }
+  .seat.booked { background:#e5e7eb; color:#9ca3af; border-color:#d1d5db; cursor:not-allowed; }
+  .legend { display:flex; gap:16px; flex-wrap:wrap; font-size:13px; color:var(--muted); margin-top:16px; }
+  .legend span { display:inline-flex; align-items:center; gap:6px; }
+  .legend i { width:16px; height:16px; border-radius:5px; display:inline-block; border:1px solid #a5b4fc; background:#fff; }
+  .legend i.sel { background:var(--indigo); border-color:var(--indigo); }
+  .legend i.book { background:#e5e7eb; border-color:#d1d5db; }
+  label { display:block; font-weight:700; font-size:14px; margin:14px 0 6px; }
+  input, select { width:100%; padding:11px 12px; border:1px solid #d1d5db; border-radius:10px; font:inherit; background:#fff; }
+  input:focus, select:focus { outline:2px solid #c7d2fe; border-color:var(--indigo); }
+  .summary-row { display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid #f3f4f6; font-size:15px; }
+  .summary-row b { text-align:right; }
+  .msg { border-radius:12px; padding:12px 14px; margin-top:14px; font-size:15px; display:none; }
+  .msg.ok { display:block; background:#f0fdf4; color:#166534; border:1px solid #bbf7d0; }
+  .msg.err { display:block; background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
+  .kode-box { display:none; margin-top:14px; background:#fffbeb; border:1px solid #fde68a; border-radius:12px; padding:14px; }
+  .kode-box.show { display:block; }
+  .kode { font-family:ui-monospace, Menlo, Consolas, monospace; font-size:28px; font-weight:800; letter-spacing:.12em; }
+  .steps { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
+  .step { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px; }
+  .step b { font-size:28px; color:var(--indigo); }
+  footer { margin-top:40px; border-top:1px solid var(--line); background:#fff; padding:22px 0; color:var(--muted); font-size:14px; }
+  @media (max-width: 820px) {
+    .hero h1 { font-size:30px; }
+    .cards, .booking, .steps { grid-template-columns:1fr; }
+    .nav-links { display:none; }
+    .seat { font-size:11px; }
+  }
 </style>
 </head>
 <body>
-<h1>Seatlock</h1>
-<p><small>Sistem reservasi tiket bioskop berbasis gRPC.</small></p>
-<p><small>Tampilan web ini hanya perantara: setiap klik diteruskan gateway
-HTTP menjadi pemanggilan gRPC ke server bioskop. Status diperbarui live
-lewat server streaming gRPC yang diubah gateway menjadi SSE.</small></p>
+<header>
+  <div class="wrap nav">
+    <a class="logo" href="#">Seat<span>lock</span></a>
+    <nav class="nav-links">
+      <a href="#film">Film &amp; Jadwal</a>
+      <a href="#pesan">Pesan Kursi</a>
+      <a href="#cara">Cara Pesan</a>
+    </nav>
+    <span class="live"><i></i> <span id="liveText">Status live</span></span>
+  </div>
+</header>
 
-<label>Nama pemesan:
-  <input id="nama" type="text" placeholder="mis. Budi" value="Budi">
-</label>
-<p>Klik satu kursi, lalu tekan tombol di bawah. Kursi yang sudah terpesan
-tidak bisa diklik.</p>
+<div class="hero">
+  <div class="wrap">
+    <h1>Pesan kursi bioskop dalam hitungan detik.</h1>
+    <p>Pilih film dan jadwalnya, pilih kursi Anda di peta, lalu simpan kode booking untuk membatalkan kapan pun.</p>
+    <div class="hero-stats">
+      <div><b id="statJadwal">3</b><span>jadwal tayang</span></div>
+      <div><b>20</b><span>kursi per jadwal</span></div>
+      <div><b>Live</b><span>status kursi diperbarui otomatis</span></div>
+    </div>
+  </div>
+</div>
 
-<div class="grid" id="grid"></div>
-<p>
-  <button id="btnPesan">Pesan kursi terpilih</button>
-  <button id="btnBatal">Batalkan kursi terpilih</button>
-  <button id="btnRefresh">Muat ulang</button>
-</p>
-<p id="pesan"></p>
-<p><small>Versi status terakhir: <span id="versi">-</span></small></p>
+<main class="wrap">
+  <section id="film">
+    <h2>Film &amp; Jadwal</h2>
+    <p class="sub">Pilih salah satu jadwal untuk melihat peta kursinya.</p>
+    <div class="cards" id="filmCards"><p>Memuat jadwal…</p></div>
+  </section>
+
+  <section id="pesan">
+    <h2>Pesan Kursi</h2>
+    <p class="sub">Kursi yang sudah terpesan tidak bisa dipilih. Kursi yang Anda pilih akan berwarna ungu.</p>
+    <div class="booking">
+      <div class="panel">
+        <h3 id="bookingTitle">Peta Kursi</h3>
+        <p class="sub" id="bookingMeta" style="margin-bottom:0">Pilih jadwal di atas terlebih dahulu.</p>
+        <div class="screen"><div>LAYAR</div></div>
+        <div id="seatArea"></div>
+        <div class="legend">
+          <span><i></i> Tersedia</span>
+          <span><i class="sel"></i> Dipilih</span>
+          <span><i class="book"></i> Terpesan</span>
+          <span style="margin-left:auto">Versi status: <b id="versi">-</b></span>
+        </div>
+        <div style="margin-top:16px; display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="btn-ghost" id="btnRefresh" type="button">Muat ulang peta</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Ringkasan Pesanan</h3>
+        <div class="summary-row"><span>Film</span><b id="sumFilm">-</b></div>
+        <div class="summary-row"><span>Jadwal</span><b id="sumJadwal">-</b></div>
+        <div class="summary-row"><span>Studio</span><b id="sumStudio">-</b></div>
+        <div class="summary-row"><span>Kursi dipilih</span><b id="sumKursi">Belum dipilih</b></div>
+
+        <label for="nama">Nama pemesan</label>
+        <input id="nama" type="text" placeholder="Nama lengkap Anda" autocomplete="name">
+
+        <button class="btn" id="btnPesan" type="button" style="width:100%; margin-top:16px;">Pesan Kursi</button>
+        <div class="msg" id="pesanMsg"></div>
+
+        <div class="kode-box" id="kodeBox">
+          <div style="font-weight:700;">Kode booking Anda</div>
+          <div class="kode" id="kodeText">-</div>
+          <p style="margin:6px 0 10px; font-size:14px; color:var(--amber);">Simpan kode ini. Kode ini wajib dimasukkan kalau Anda ingin membatalkan pesanan.</p>
+          <button class="btn-ghost" id="btnSalin" type="button">Salin kode</button>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--line); margin:22px 0 6px;">
+        <h3 style="font-size:18px;">Batalkan Pesanan</h3>
+        <p class="sub" style="font-size:14px;">Pilih kursi yang sama, isi nama dan kode booking yang Anda terima saat memesan.</p>
+        <label for="kodeBatal">Kode booking</label>
+        <input id="kodeBatal" type="text" placeholder="Contoh: A1B2C3" style="text-transform:uppercase;">
+        <button class="btn-danger" id="btnBatal" type="button" style="width:100%; margin-top:14px;">Batalkan Kursi Terpilih</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="cara">
+    <h2>Cara Pesan</h2>
+    <div class="steps">
+      <div class="step"><b>1</b><h3 style="margin:6px 0;">Pilih jadwal</h3><p style="color:var(--muted); margin:0;">Tentukan film, jam tayang, dan studionya. Tiap jadwal punya peta kursi sendiri.</p></div>
+      <div class="step"><b>2</b><h3 style="margin:6px 0;">Pilih kursi</h3><p style="color:var(--muted); margin:0;">Klik satu kursi yang masih tersedia, isi nama Anda, lalu tekan Pesan Kursi.</p></div>
+      <div class="step"><b>3</b><h3 style="margin:6px 0;">Simpan kode booking</h3><p style="color:var(--muted); margin:0;">Kode booking hanya ditampilkan sekali kepada pemesan. Tanpa kode itu, pesanan tidak bisa dibatalkan.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Seatlock — Sistem reservasi tiket bioskop berbasis RPC. Proyek Mini, Program Studi Informatika, Fakultas Teknik, Universitas Siliwangi.</div>
+</footer>
 
 <script>
-let terpilih = null;
-let kursiSaatIni = [];
+let jadwalList = [], jadwalTerpilih = null, kursiList = [], terpilih = null, es = null;
+const $ = (id) => document.getElementById(id);
+const GRAD = ["linear-gradient(135deg,#4338ca,#7c3aed)", "linear-gradient(135deg,#0f766e,#06b6d4)", "linear-gradient(135deg,#be185d,#f59e0b)"];
 
 function buatId() {
   // request_id dibuat SEKALI per aksi dan diteruskan utuh ke server,
   // supaya retry tidak membuat pemesanan ganda.
   return 'web-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 }
+function showMsg(el, text, ok) {
+  el.textContent = text; el.className = 'msg ' + (ok ? 'ok' : 'err');
+}
+function jadwalById(id) { return jadwalList.find(j => j.id === id); }
 
-function render() {
-  const grid = document.getElementById('grid');
-  grid.innerHTML = '';
-  kursiSaatIni.forEach(k => {
-    const b = document.createElement('button');
-    b.className = 'kursi' + (k.status === 'terpesan' ? ' terpesan' : '')
-      + (terpilih === k.id ? ' terpilih' : '');
-    b.textContent = k.id + (k.status === 'terpesan' ? '\n(' + k.pemesan + ')' : '');
-    b.disabled = k.status === 'terpesan';
-    b.onclick = () => { terpilih = k.id; render(); };
-    grid.appendChild(b);
+async function muatJadwal() {
+  const res = await fetch('/api/jadwal');
+  const data = await res.json();
+  jadwalList = data.jadwal || [];
+  $('statJadwal').textContent = jadwalList.length;
+  const wrap = $('filmCards'); wrap.innerHTML = '';
+  for (let i = 0; i < jadwalList.length; i++) {
+    const j = jadwalList[i];
+    const kursiRes = await fetch('/api/kursi?jadwal=' + encodeURIComponent(j.id));
+    const kursiData = await kursiRes.json();
+    const booked = (kursiData.kursi || []).filter(k => k.status === 'terpesan').length;
+    const total = (kursiData.kursi || []).length || 20;
+    const pct = Math.round(booked / total * 100);
+    const card = document.createElement('article');
+    card.className = 'film-card';
+    card.innerHTML =
+      '<div class="film-banner" style="background:' + GRAD[i % GRAD.length] + '">' + j.film + '</div>' +
+      '<div class="film-body"><h3>' + j.film + '</h3>' +
+      '<p class="meta">' + j.waktu + ' &bull; ' + j.studio + ' &bull; Kode: ' + j.id + '</p>' +
+      '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+      '<p class="occ">' + booked + ' dari ' + total + ' kursi terpesan (' + pct + '%)</p>' +
+      '<button class="btn-ghost pilih-jadwal" data-id="' + j.id + '" type="button">Pilih jadwal ini</button></div>';
+    wrap.appendChild(card);
+  }
+  wrap.querySelectorAll('.pilih-jadwal').forEach(b => {
+    b.onclick = () => { pilihJadwal(b.dataset.id); document.getElementById('pesan').scrollIntoView({behavior:'smooth'}); };
+  });
+  if (!jadwalTerpilih && jadwalList.length) pilihJadwal(jadwalList[0].id);
+  else tandaiKartuAktif();
+}
+function tandaiKartuAktif() {
+  document.querySelectorAll('.pilih-jadwal').forEach(b => {
+    const aktif = b.dataset.id === jadwalTerpilih;
+    b.classList.toggle('active', aktif);
+    b.textContent = aktif ? 'Jadwal terpilih ✓' : 'Pilih jadwal ini';
   });
 }
-
-async function muat() {
-  const res = await fetch('/api/kursi');
-  const data = await res.json();
-  kursiSaatIni = data.kursi || [];
-  render();
+function pilihJadwal(id) {
+  jadwalTerpilih = id; terpilih = null;
+  const j = jadwalById(id);
+  if (j) {
+    $('bookingTitle').textContent = 'Peta Kursi — ' + j.film;
+    $('bookingMeta').textContent = j.waktu + ' • ' + j.studio + ' • Kode jadwal ' + j.id;
+    $('sumFilm').textContent = j.film;
+    $('sumJadwal').textContent = j.waktu;
+    $('sumStudio').textContent = j.studio;
+  }
+  $('sumKursi').textContent = 'Belum dipilih';
+  tandaiKartuAktif();
+  if (es) es.close();
+  es = new EventSource('/api/stream?jadwal=' + encodeURIComponent(id));
+  es.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    kursiList = data.kursi; $('versi').textContent = data.versi; renderKursi();
+  };
+  es.onerror = () => { /* polling cadangan di bawah tetap berjalan */ };
+  muatKursi();
 }
-
-async function kirim(endpoint) {
-  const nama = document.getElementById('nama').value.trim();
-  if (!terpilih) { document.getElementById('pesan').textContent = 'Pilih satu kursi dulu.'; return; }
-  if (!nama) { document.getElementById('pesan').textContent = 'Isi nama pemesan dulu.'; return; }
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({kursi_id: terpilih, nama: nama, request_id: buatId()})
+async function muatKursi() {
+  if (!jadwalTerpilih) return;
+  const res = await fetch('/api/kursi?jadwal=' + encodeURIComponent(jadwalTerpilih));
+  const data = await res.json();
+  kursiList = data.kursi || [];
+  renderKursi();
+}
+function renderKursi() {
+  const area = $('seatArea'); area.innerHTML = '';
+  ['A', 'B'].forEach(row => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'seat-row';
+    const label = document.createElement('span');
+    label.className = 'row-label'; label.textContent = row;
+    rowDiv.appendChild(label);
+    const grid = document.createElement('div');
+    grid.className = 'seat-grid';
+    kursiList.filter(k => k.id.startsWith(row)).forEach(k => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'seat' + (k.status === 'terpesan' ? ' booked' : '') + (terpilih === k.id ? ' selected' : '');
+      b.textContent = k.id; b.disabled = k.status === 'terpesan';
+      b.setAttribute('aria-label', 'Kursi ' + k.id + (k.status === 'terpesan' ? ', terpesan oleh ' + k.pemesan : ', tersedia'));
+      if (k.status === 'terpesan') b.title = 'Terpesan oleh ' + k.pemesan;
+      b.onclick = () => { terpilih = k.id; $('sumKursi').textContent = k.id; renderKursi(); };
+      grid.appendChild(b);
+    });
+    rowDiv.appendChild(grid);
+    area.appendChild(rowDiv);
   });
-  const data = await res.json();
-  document.getElementById('pesan').textContent = data.pesan || data.error || 'Gagal.';
-  await muat();
 }
-
-document.getElementById('btnPesan').onclick = () => kirim('/api/pesan');
-document.getElementById('btnBatal').onclick = () => kirim('/api/batal');
-document.getElementById('btnRefresh').onclick = muat;
-
-// Live update: SSE dari gateway (sumbernya streaming gRPC).
-// Jika SSE gagal, muat() berkala tetap menjaga peta tetap mutakhir.
-const es = new EventSource('/api/stream');
-es.onmessage = (e) => {
-  const data = JSON.parse(e.data);
-  kursiSaatIni = data.kursi;
-  document.getElementById('versi').textContent = data.versi;
-  render();
+async function kirim(endpoint, extra) {
+  const nama = $('nama').value.trim();
+  if (!terpilih) { showMsg($('pesanMsg'), 'Pilih satu kursi dulu.', false); return; }
+  if (!nama) { showMsg($('pesanMsg'), 'Isi nama pemesan dulu.', false); return; }
+  const body = { jadwal_id: jadwalTerpilih, kursi_id: terpilih, nama: nama, request_id: buatId(), ...(extra || {}) };
+  const res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body) });
+  const data = await res.json();
+  showMsg($('pesanMsg'), data.pesan || data.error || 'Gagal.', !!data.sukses);
+  if (endpoint === '/api/pesan' && data.sukses && data.kode_booking) {
+    $('kodeText').textContent = data.kode_booking;
+    $('kodeBox').classList.add('show');
+    $('kodeBatal').value = data.kode_booking;
+    terpilih = null; $('sumKursi').textContent = 'Belum dipilih';
+  }
+  await muatKursi();
+}
+$('btnPesan').onclick = () => kirim('/api/pesan');
+$('btnBatal').onclick = () => {
+  const kode = $('kodeBatal').value.trim().toUpperCase();
+  if (!kode) { showMsg($('pesanMsg'), 'Isi kode booking dulu untuk membatalkan.', false); return; }
+  kirim('/api/batal', { kode_booking: kode });
 };
-es.onerror = () => { /* biarkan polling cadangan di bawah yang bekerja */ };
-setInterval(muat, 5000);
-muat();
+$('btnRefresh').onclick = muatKursi;
+$('btnSalin').onclick = async () => {
+  try { await navigator.clipboard.writeText($('kodeText').textContent); $('btnSalin').textContent = 'Tersalin ✓'; }
+  catch (e) { /* clipboard tidak tersedia di konteks ini */ }
+};
+setInterval(() => { if (jadwalTerpilih) muatKursi(); }, 10000);
+muatJadwal();
 </script>
 </body>
 </html>
