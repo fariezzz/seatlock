@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Seatlock — Reservasi Tiket Bioskop (gRPC)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin: 1rem 0; }
+  button.kursi { padding: 0.8rem 0.2rem; font-size: 1rem; cursor: pointer; border: 1px solid #888; border-radius: 6px; background: #e8f5e9; }
+  button.kursi.terpesan { background: #ffcdd2; cursor: not-allowed; }
+  button.kursi.terpilih { outline: 3px solid #1565c0; }
+  input { padding: 0.5rem; font-size: 1rem; }
+  #pesan { min-height: 1.5em; font-weight: 600; }
+  small { color: #555; }
+</style>
+</head>
+<body>
+<h1>Seatlock</h1>
+<p><small>Sistem reservasi tiket bioskop berbasis gRPC.</small></p>
+<p><small>Tampilan web ini hanya perantara: setiap klik diteruskan gateway
+HTTP menjadi pemanggilan gRPC ke server bioskop. Status diperbarui live
+lewat server streaming gRPC yang diubah gateway menjadi SSE.</small></p>
+
+<label>Nama pemesan:
+  <input id="nama" type="text" placeholder="mis. Budi" value="Budi">
+</label>
+<p>Klik satu kursi, lalu tekan tombol di bawah. Kursi yang sudah terpesan
+tidak bisa diklik.</p>
+
+<div class="grid" id="grid"></div>
+<p>
+  <button id="btnPesan">Pesan kursi terpilih</button>
+  <button id="btnBatal">Batalkan kursi terpilih</button>
+  <button id="btnRefresh">Muat ulang</button>
+</p>
+<p id="pesan"></p>
+<p><small>Versi status terakhir: <span id="versi">-</span></small></p>
+
+<script>
+let terpilih = null;
+let kursiSaatIni = [];
+
+function buatId() {
+  // request_id dibuat SEKALI per aksi dan diteruskan utuh ke server,
+  // supaya retry tidak membuat pemesanan ganda.
+  return 'web-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+}
+
+function render() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  kursiSaatIni.forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'kursi' + (k.status === 'terpesan' ? ' terpesan' : '')
+      + (terpilih === k.id ? ' terpilih' : '');
+    b.textContent = k.id + (k.status === 'terpesan' ? '\n(' + k.pemesan + ')' : '');
+    b.disabled = k.status === 'terpesan';
+    b.onclick = () => { terpilih = k.id; render(); };
+    grid.appendChild(b);
+  });
+}
+
+async function muat() {
+  const res = await fetch('/api/kursi');
+  const data = await res.json();
+  kursiSaatIni = data.kursi || [];
+  render();
+}
+
+async function kirim(endpoint) {
+  const nama = document.getElementById('nama').value.trim();
+  if (!terpilih) { document.getElementById('pesan').textContent = 'Pilih satu kursi dulu.'; return; }
+  if (!nama) { document.getElementById('pesan').textContent = 'Isi nama pemesan dulu.'; return; }
+  const res = await fetch(endpoint, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({kursi_id: terpilih, nama: nama, request_id: buatId()})
+  });
+  const data = await res.json();
+  document.getElementById('pesan').textContent = data.pesan || data.error || 'Gagal.';
+  await muat();
+}
+
+document.getElementById('btnPesan').onclick = () => kirim('/api/pesan');
+document.getElementById('btnBatal').onclick = () => kirim('/api/batal');
+document.getElementById('btnRefresh').onclick = muat;
+
+// Live update: SSE dari gateway (sumbernya streaming gRPC).
+// Jika SSE gagal, muat() berkala tetap menjaga peta tetap mutakhir.
+const es = new EventSource('/api/stream');
+es.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  kursiSaatIni = data.kursi;
+  document.getElementById('versi').textContent = data.versi;
+  render();
+};
+es.onerror = () => { /* biarkan polling cadangan di bawah yang bekerja */ };
+setInterval(muat, 5000);
+muat();
+</script>
+</body>
+</html>
