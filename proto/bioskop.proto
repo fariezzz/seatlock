@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+package bioskop;
+
+// Layanan reservasi tiket bioskop (studi kasus 1, proyek mini RPC).
+// Minimal 4 RPC, termasuk 1 streaming, sesuai ketentuan modul.
+service Bioskop {
+  // Unary: pesan satu kursi. Idempoten lewat request_id (lihat server.py).
+  rpc PesanKursi (PesanRequest) returns (PesanResponse);
+  // Unary: batalkan pesanan sendiri.
+  rpc BatalkanPesanan (BatalRequest) returns (PesanResponse);
+  // Unary: daftar seluruh kursi beserta statusnya.
+  rpc LihatKursi (LihatRequest) returns (LihatResponse);
+  // Server streaming: kirim snapshot status kursi setiap ada perubahan.
+  rpc StreamingStatusKursi (StatusRequest) returns (stream StatusUpdate);
+}
+
+message Kursi {
+  string id = 1;       // contoh: "A3"
+  string status = 2;   // "kosong" atau "terpesan"
+  string pemesan = 3;  // nama pemesan, kosong jika kursi kosong
+}
+
+message PesanRequest {
+  string kursi_id = 1;
+  string nama = 2;
+  string request_id = 3;  // WAJIB stabil di tiap retry; jangan dibuat ulang.
+}
+
+message BatalRequest {
+  string kursi_id = 1;
+  string nama = 2;
+  string request_id = 3;
+}
+
+message PesanResponse {
+  bool sukses = 1;
+  string pesan = 2;
+  Kursi kursi = 3;
+}
+
+message LihatRequest {}
+
+message LihatResponse {
+  repeated Kursi kursi = 1;
+}
+
+message StatusRequest {}
+
+message StatusUpdate {
+  repeated Kursi kursi = 1;
+  int64 versi = 2;  // naik setiap ada perubahan status kursi
+}
