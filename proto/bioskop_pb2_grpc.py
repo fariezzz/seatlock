@@ -26,8 +26,13 @@ if _version_not_supported:
 
 
 class BioskopStub:
-    """Layanan reservasi tiket bioskop (studi kasus 1, proyek mini RPC).
-    Minimal 4 RPC, termasuk 1 streaming, sesuai ketentuan modul.
+    """Layanan reservasi tiket bioskop Seatlock, versi Tier 1 Ringan.
+    5 RPC, termasuk 1 streaming. Perubahan dari v1:
+    - DaftarJadwal (baru): daftar jadwal tayang preset.
+    - jadwal_id di Pesan/Batal/Lihat/Streaming: tiap jadwal punya peta kursi sendiri.
+    - kode_booking: dikembalikan hanya ke pemesan yang berhasil (PesanResponse),
+    dan wajib dipakai saat membatalkan. Kursi di Lihat/Streaming TIDAK membawa
+    kode booking, supaya kode tidak bisa dicuri dari peta kursi.
     """
 
     def __init__(self, channel):
@@ -56,37 +61,49 @@ class BioskopStub:
                 request_serializer=bioskop__pb2.StatusRequest.SerializeToString,
                 response_deserializer=bioskop__pb2.StatusUpdate.FromString,
                 _registered_method=True)
+        self.DaftarJadwal = channel.unary_unary(
+                '/bioskop.Bioskop/DaftarJadwal',
+                request_serializer=bioskop__pb2.DaftarJadwalRequest.SerializeToString,
+                response_deserializer=bioskop__pb2.DaftarJadwalResponse.FromString,
+                _registered_method=True)
 
 
 class BioskopServicer:
-    """Layanan reservasi tiket bioskop (studi kasus 1, proyek mini RPC).
-    Minimal 4 RPC, termasuk 1 streaming, sesuai ketentuan modul.
+    """Layanan reservasi tiket bioskop Seatlock, versi Tier 1 Ringan.
+    5 RPC, termasuk 1 streaming. Perubahan dari v1:
+    - DaftarJadwal (baru): daftar jadwal tayang preset.
+    - jadwal_id di Pesan/Batal/Lihat/Streaming: tiap jadwal punya peta kursi sendiri.
+    - kode_booking: dikembalikan hanya ke pemesan yang berhasil (PesanResponse),
+    dan wajib dipakai saat membatalkan. Kursi di Lihat/Streaming TIDAK membawa
+    kode booking, supaya kode tidak bisa dicuri dari peta kursi.
     """
 
     def PesanKursi(self, request, context):
-        """Unary: pesan satu kursi. Idempoten lewat request_id (lihat server.py).
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def BatalkanPesanan(self, request, context):
-        """Unary: batalkan pesanan sendiri.
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def LihatKursi(self, request, context):
-        """Unary: daftar seluruh kursi beserta statusnya.
-        """
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def StreamingStatusKursi(self, request, context):
-        """Server streaming: kirim snapshot status kursi setiap ada perubahan.
-        """
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DaftarJadwal(self, request, context):
+        """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -114,6 +131,11 @@ def add_BioskopServicer_to_server(servicer, server):
                     request_deserializer=bioskop__pb2.StatusRequest.FromString,
                     response_serializer=bioskop__pb2.StatusUpdate.SerializeToString,
             ),
+            'DaftarJadwal': grpc.unary_unary_rpc_method_handler(
+                    servicer.DaftarJadwal,
+                    request_deserializer=bioskop__pb2.DaftarJadwalRequest.FromString,
+                    response_serializer=bioskop__pb2.DaftarJadwalResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'bioskop.Bioskop', rpc_method_handlers)
@@ -123,8 +145,13 @@ def add_BioskopServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class Bioskop:
-    """Layanan reservasi tiket bioskop (studi kasus 1, proyek mini RPC).
-    Minimal 4 RPC, termasuk 1 streaming, sesuai ketentuan modul.
+    """Layanan reservasi tiket bioskop Seatlock, versi Tier 1 Ringan.
+    5 RPC, termasuk 1 streaming. Perubahan dari v1:
+    - DaftarJadwal (baru): daftar jadwal tayang preset.
+    - jadwal_id di Pesan/Batal/Lihat/Streaming: tiap jadwal punya peta kursi sendiri.
+    - kode_booking: dikembalikan hanya ke pemesan yang berhasil (PesanResponse),
+    dan wajib dipakai saat membatalkan. Kursi di Lihat/Streaming TIDAK membawa
+    kode booking, supaya kode tidak bisa dicuri dari peta kursi.
     """
 
     @staticmethod
@@ -225,6 +252,33 @@ class Bioskop:
             '/bioskop.Bioskop/StreamingStatusKursi',
             bioskop__pb2.StatusRequest.SerializeToString,
             bioskop__pb2.StatusUpdate.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def DaftarJadwal(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/bioskop.Bioskop/DaftarJadwal',
+            bioskop__pb2.DaftarJadwalRequest.SerializeToString,
+            bioskop__pb2.DaftarJadwalResponse.FromString,
             options,
             channel_credentials,
             insecure,

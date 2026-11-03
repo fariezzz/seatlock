@@ -2,17 +2,26 @@ syntax = "proto3";
 
 package bioskop;
 
-// Layanan reservasi tiket bioskop (studi kasus 1, proyek mini RPC).
-// Minimal 4 RPC, termasuk 1 streaming, sesuai ketentuan modul.
+// Layanan reservasi tiket bioskop Seatlock, versi Tier 1 Ringan.
+// 5 RPC, termasuk 1 streaming. Perubahan dari v1:
+//  - DaftarJadwal (baru): daftar jadwal tayang preset.
+//  - jadwal_id di Pesan/Batal/Lihat/Streaming: tiap jadwal punya peta kursi sendiri.
+//  - kode_booking: dikembalikan hanya ke pemesan yang berhasil (PesanResponse),
+//    dan wajib dipakai saat membatalkan. Kursi di Lihat/Streaming TIDAK membawa
+//    kode booking, supaya kode tidak bisa dicuri dari peta kursi.
 service Bioskop {
-  // Unary: pesan satu kursi. Idempoten lewat request_id (lihat server.py).
   rpc PesanKursi (PesanRequest) returns (PesanResponse);
-  // Unary: batalkan pesanan sendiri.
   rpc BatalkanPesanan (BatalRequest) returns (PesanResponse);
-  // Unary: daftar seluruh kursi beserta statusnya.
   rpc LihatKursi (LihatRequest) returns (LihatResponse);
-  // Server streaming: kirim snapshot status kursi setiap ada perubahan.
   rpc StreamingStatusKursi (StatusRequest) returns (stream StatusUpdate);
+  rpc DaftarJadwal (DaftarJadwalRequest) returns (DaftarJadwalResponse);
+}
+
+message Jadwal {
+  string id = 1;      // contoh: "J1"
+  string film = 2;    // contoh: "Petualangan Langit"
+  string waktu = 3;   // contoh: "14:00"
+  string studio = 4;  // contoh: "Studio 1"
 }
 
 message Kursi {
@@ -22,32 +31,48 @@ message Kursi {
 }
 
 message PesanRequest {
-  string kursi_id = 1;
-  string nama = 2;
-  string request_id = 3;  // WAJIB stabil di tiap retry; jangan dibuat ulang.
+  string jadwal_id = 1;
+  string kursi_id = 2;
+  string nama = 3;
+  string request_id = 4;  // WAJIB stabil di tiap retry; jangan dibuat ulang.
 }
 
 message BatalRequest {
-  string kursi_id = 1;
-  string nama = 2;
-  string request_id = 3;
+  string jadwal_id = 1;
+  string kursi_id = 2;
+  string nama = 3;
+  string request_id = 4;
+  string kode_booking = 5;  // wajib cocok dengan kode saat memesan
 }
 
 message PesanResponse {
   bool sukses = 1;
   string pesan = 2;
   Kursi kursi = 3;
+  string kode_booking = 4;  // hanya diisi saat pemesanan berhasil
 }
 
-message LihatRequest {}
+message LihatRequest {
+  string jadwal_id = 1;  // kosong = jadwal pertama (J1)
+}
 
 message LihatResponse {
   repeated Kursi kursi = 1;
+  string jadwal_id = 2;
 }
 
-message StatusRequest {}
+message StatusRequest {
+  string jadwal_id = 1;  // kosong = jadwal pertama (J1)
+}
 
 message StatusUpdate {
   repeated Kursi kursi = 1;
-  int64 versi = 2;  // naik setiap ada perubahan status kursi
+  int64 versi = 2;  // naik setiap ada perubahan status kursi pada jadwal itu
+  string jadwal_id = 3;
+}
+
+message DaftarJadwalRequest {}
+
+message DaftarJadwalResponse {
+  repeated Jadwal jadwal = 1;
 }

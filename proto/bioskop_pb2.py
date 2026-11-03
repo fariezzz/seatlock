@@ -24,29 +24,35 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rbioskop.proto\x12\x07\x62ioskop\"4\n\x05Kursi\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07pemesan\x18\x03 \x01(\t\"B\n\x0cPesanRequest\x12\x10\n\x08kursi_id\x18\x01 \x01(\t\x12\x0c\n\x04nama\x18\x02 \x01(\t\x12\x12\n\nrequest_id\x18\x03 \x01(\t\"B\n\x0c\x42\x61talRequest\x12\x10\n\x08kursi_id\x18\x01 \x01(\t\x12\x0c\n\x04nama\x18\x02 \x01(\t\x12\x12\n\nrequest_id\x18\x03 \x01(\t\"M\n\rPesanResponse\x12\x0e\n\x06sukses\x18\x01 \x01(\x08\x12\r\n\x05pesan\x18\x02 \x01(\t\x12\x1d\n\x05kursi\x18\x03 \x01(\x0b\x32\x0e.bioskop.Kursi\"\x0e\n\x0cLihatRequest\".\n\rLihatResponse\x12\x1d\n\x05kursi\x18\x01 \x03(\x0b\x32\x0e.bioskop.Kursi\"\x0f\n\rStatusRequest\"<\n\x0cStatusUpdate\x12\x1d\n\x05kursi\x18\x01 \x03(\x0b\x32\x0e.bioskop.Kursi\x12\r\n\x05versi\x18\x02 \x01(\x03\x32\x8e\x02\n\x07\x42ioskop\x12;\n\nPesanKursi\x12\x15.bioskop.PesanRequest\x1a\x16.bioskop.PesanResponse\x12@\n\x0f\x42\x61talkanPesanan\x12\x15.bioskop.BatalRequest\x1a\x16.bioskop.PesanResponse\x12;\n\nLihatKursi\x12\x15.bioskop.LihatRequest\x1a\x16.bioskop.LihatResponse\x12G\n\x14StreamingStatusKursi\x12\x16.bioskop.StatusRequest\x1a\x15.bioskop.StatusUpdate0\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\rbioskop.proto\x12\x07\x62ioskop\"A\n\x06Jadwal\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0c\n\x04\x66ilm\x18\x02 \x01(\t\x12\r\n\x05waktu\x18\x03 \x01(\t\x12\x0e\n\x06studio\x18\x04 \x01(\t\"4\n\x05Kursi\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\t\x12\x0f\n\x07pemesan\x18\x03 \x01(\t\"U\n\x0cPesanRequest\x12\x11\n\tjadwal_id\x18\x01 \x01(\t\x12\x10\n\x08kursi_id\x18\x02 \x01(\t\x12\x0c\n\x04nama\x18\x03 \x01(\t\x12\x12\n\nrequest_id\x18\x04 \x01(\t\"k\n\x0c\x42\x61talRequest\x12\x11\n\tjadwal_id\x18\x01 \x01(\t\x12\x10\n\x08kursi_id\x18\x02 \x01(\t\x12\x0c\n\x04nama\x18\x03 \x01(\t\x12\x12\n\nrequest_id\x18\x04 \x01(\t\x12\x14\n\x0ckode_booking\x18\x05 \x01(\t\"c\n\rPesanResponse\x12\x0e\n\x06sukses\x18\x01 \x01(\x08\x12\r\n\x05pesan\x18\x02 \x01(\t\x12\x1d\n\x05kursi\x18\x03 \x01(\x0b\x32\x0e.bioskop.Kursi\x12\x14\n\x0ckode_booking\x18\x04 \x01(\t\"!\n\x0cLihatRequest\x12\x11\n\tjadwal_id\x18\x01 \x01(\t\"A\n\rLihatResponse\x12\x1d\n\x05kursi\x18\x01 \x03(\x0b\x32\x0e.bioskop.Kursi\x12\x11\n\tjadwal_id\x18\x02 \x01(\t\"\"\n\rStatusRequest\x12\x11\n\tjadwal_id\x18\x01 \x01(\t\"O\n\x0cStatusUpdate\x12\x1d\n\x05kursi\x18\x01 \x03(\x0b\x32\x0e.bioskop.Kursi\x12\r\n\x05versi\x18\x02 \x01(\x03\x12\x11\n\tjadwal_id\x18\x03 \x01(\t\"\x15\n\x13\x44\x61\x66tarJadwalRequest\"7\n\x14\x44\x61\x66tarJadwalResponse\x12\x1f\n\x06jadwal\x18\x01 \x03(\x0b\x32\x0f.bioskop.Jadwal2\xdb\x02\n\x07\x42ioskop\x12;\n\nPesanKursi\x12\x15.bioskop.PesanRequest\x1a\x16.bioskop.PesanResponse\x12@\n\x0f\x42\x61talkanPesanan\x12\x15.bioskop.BatalRequest\x1a\x16.bioskop.PesanResponse\x12;\n\nLihatKursi\x12\x15.bioskop.LihatRequest\x1a\x16.bioskop.LihatResponse\x12G\n\x14StreamingStatusKursi\x12\x16.bioskop.StatusRequest\x1a\x15.bioskop.StatusUpdate0\x01\x12K\n\x0c\x44\x61\x66tarJadwal\x12\x1c.bioskop.DaftarJadwalRequest\x1a\x1d.bioskop.DaftarJadwalResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'bioskop_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
-  _globals['_KURSI']._serialized_start=26
-  _globals['_KURSI']._serialized_end=78
-  _globals['_PESANREQUEST']._serialized_start=80
-  _globals['_PESANREQUEST']._serialized_end=146
-  _globals['_BATALREQUEST']._serialized_start=148
-  _globals['_BATALREQUEST']._serialized_end=214
-  _globals['_PESANRESPONSE']._serialized_start=216
-  _globals['_PESANRESPONSE']._serialized_end=293
-  _globals['_LIHATREQUEST']._serialized_start=295
-  _globals['_LIHATREQUEST']._serialized_end=309
-  _globals['_LIHATRESPONSE']._serialized_start=311
-  _globals['_LIHATRESPONSE']._serialized_end=357
-  _globals['_STATUSREQUEST']._serialized_start=359
-  _globals['_STATUSREQUEST']._serialized_end=374
-  _globals['_STATUSUPDATE']._serialized_start=376
-  _globals['_STATUSUPDATE']._serialized_end=436
-  _globals['_BIOSKOP']._serialized_start=439
-  _globals['_BIOSKOP']._serialized_end=709
+  _globals['_JADWAL']._serialized_start=26
+  _globals['_JADWAL']._serialized_end=91
+  _globals['_KURSI']._serialized_start=93
+  _globals['_KURSI']._serialized_end=145
+  _globals['_PESANREQUEST']._serialized_start=147
+  _globals['_PESANREQUEST']._serialized_end=232
+  _globals['_BATALREQUEST']._serialized_start=234
+  _globals['_BATALREQUEST']._serialized_end=341
+  _globals['_PESANRESPONSE']._serialized_start=343
+  _globals['_PESANRESPONSE']._serialized_end=442
+  _globals['_LIHATREQUEST']._serialized_start=444
+  _globals['_LIHATREQUEST']._serialized_end=477
+  _globals['_LIHATRESPONSE']._serialized_start=479
+  _globals['_LIHATRESPONSE']._serialized_end=544
+  _globals['_STATUSREQUEST']._serialized_start=546
+  _globals['_STATUSREQUEST']._serialized_end=580
+  _globals['_STATUSUPDATE']._serialized_start=582
+  _globals['_STATUSUPDATE']._serialized_end=661
+  _globals['_DAFTARJADWALREQUEST']._serialized_start=663
+  _globals['_DAFTARJADWALREQUEST']._serialized_end=684
+  _globals['_DAFTARJADWALRESPONSE']._serialized_start=686
+  _globals['_DAFTARJADWALRESPONSE']._serialized_end=741
+  _globals['_BIOSKOP']._serialized_start=744
+  _globals['_BIOSKOP']._serialized_end=1091
 # @@protoc_insertion_point(module_scope)
