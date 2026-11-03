@@ -4,5 +4,7 @@
   "pythonPlatform": "Windows",
   "extraPaths": ["proto"],
   "reportMissingModuleSource": "none",
-  "reportMissingImports": "warning"
+  "reportMissingImports": "warning",
+  "reportAttributeAccessIssue": "none",
+  "reportIncompatibleMethodOverride": "none"
 }

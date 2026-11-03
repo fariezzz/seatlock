@@ -50,7 +50,7 @@ def kursi_ke_dict(k):
 
 
 class Handler(BaseHTTPRequestHandler):
-    def log_message(self, *args):
+    def log_message(self, format: str, *args) -> None:  # noqa: A002
         pass
 
     def _kirim_json(self, data, status=200):
