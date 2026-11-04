@@ -119,6 +119,40 @@ Untuk client dari mesin kedua, ganti targetnya, misal:
 python client/client.py --target 192.168.1.10:50051 lihat --jadwal J1
 ```
 
+## Uji tambahan (v2.1)
+
+Selain uji di atas, versi ini menambahkan pengujian yang diminta dari
+review pengujian:
+
+- **Uji timeout dan retry (khusus pengujian, bukan perilaku normal).**
+  Jalankan server dengan hook sekali pakai, lalu pesan lewat CLI
+  (timeout CLI 2 detik, delay 3 detik, retry otomatis dengan request_id
+  yang sama):
+  ```powershell
+  $env:SEATLOCK_DELAY_ONCE_SEC = "3"
+  python server/server.py --host 0.0.0.0 --port 50051
+  python client/client.py pesan A4 --nama Budi --jadwal J1
+  ```
+  Hasil yang diharapkan: percobaan pertama gagal `DEADLINE_EXCEEDED`
+  (terlihat baris `[retry]` di CLI), retry berhasil dengan kode booking
+  yang sama, dan kursi tercatat tepat satu kali. Jangan pakai variabel
+  ini saat demo normal.
+- **Uji kegagalan dan pemulihan.** Hentikan server, jalankan `lihat`:
+  client menerima `UNAVAILABLE` dalam batas timeout, tidak menggantung.
+  Jalankan lagi server: `lihat` berhasil dan pesanan lama masih ada.
+- **Uji streaming mendalam.** Jalankan dua `pantau` pada jadwal yang
+  sama, pesan satu kursi dari terminal ketiga: kedua pantau menerima
+  snapshot versi yang sama. Putuskan lalu sambungkan lagi satu pantau:
+  snapshot pertamanya sudah benar.
+- **Uji validasi.** Jadwal tidak ada, kursi tidak valid, nama kosong,
+  kursi kosong, dan kode booking salah semuanya ditolak. Penolakan
+  validasi tidak dicatat di tabel proses, sehingga retry dengan
+  request_id yang sama setelah memperbaiki input berhasil; penolakan
+  karena state (sudah terpesan/sudah kosong) tetap dicatat.
+- **Uji race 10 pengulangan.** Ulangi `race --n 20` pada kursi segar
+  A1–A10 di jadwal J2: tiap pengulangan harus tepat 1 berhasil, 19
+  ditolak.
+
 ## Pengujian
 
 Uji race — 20 client memesan kursi yang sama bersamaan pada satu jadwal
@@ -173,6 +207,10 @@ angka ini masih naik seiring jumlah client, bukan runtuh.
    supaya yang terukur adalah latensi RPC, bukan latensi web + RPC.
 4. Jangan pernah menampilkan `kode_booking` di peta kursi atau di
    streaming. Kode hanya untuk pemesan yang berhasil.
+5. Server menolak input tidak valid (nama/kursi/jadwal kosong atau tidak
+   ada) sebelum memproses, dan penolakan itu tidak dicatat di tabel
+   proses, sehingga input boleh diperbaiki lalu di-retry dengan
+   request_id yang sama.
 
 ## Demo 2 mesin (naskah video, maks. 5 menit)
 

@@ -40,6 +40,11 @@ class BioskopServicer(pb_grpc.BioskopServicer):
         # versi saat restart tidak menghilangkan data apa pun.
         self.versi = {}
         self.versi_event = threading.Event()
+        try:
+            self._delay_once_sec = float(os.environ.get("SEATLOCK_DELAY_ONCE_SEC", "0") or 0)
+        except ValueError:
+            self._delay_once_sec = 0
+        self._delay_used = False
 
     def _init_db(self):
         c = self.conn
@@ -93,6 +98,18 @@ class BioskopServicer(pb_grpc.BioskopServicer):
                         kursi=pb.Kursi(id=row[2], status=row[3], pemesan=row[4])
                         if row[2] else None,
                         kode_booking=row[5] or "")
+            # Validasi sebelum diproses (tidak dicatat di tabel proses).
+            if request.jadwal_id and not c.execute(
+                    "SELECT 1 FROM jadwal WHERE id=?", (jid,)).fetchone():
+                return pb.PesanResponse(
+                    sukses=False,
+                    pesan=f"Jadwal {jid} tidak tersedia.")
+            if not request.kursi_id.strip():
+                return pb.PesanResponse(
+                    sukses=False, pesan="Nomor kursi wajib diisi.")
+            if not request.nama.strip():
+                return pb.PesanResponse(
+                    sukses=False, pesan="Nama pemesan wajib diisi.")
             kursi = c.execute(
                 "SELECT status, pemesan FROM kursi WHERE jadwal_id=? "
                 "AND kursi_id=?", (jid, request.kursi_id)).fetchone()
@@ -134,7 +151,12 @@ class BioskopServicer(pb_grpc.BioskopServicer):
                      hasil.kursi.pemesan if hasil.HasField("kursi") else "",
                      hasil.kode_booking))
             c.commit()
-            return hasil
+        # Hook pengujian timeout saja (SEATLOCK_DELAY_ONCE_SEC): di luar lock,
+        # setelah commit, sekali saja. Bukan perilaku normal.
+        if hasil.sukses and self._delay_once_sec > 0 and not self._delay_used:
+            self._delay_used = True
+            time.sleep(self._delay_once_sec)
+        return hasil
 
     def BatalkanPesanan(self, request, context):
         jid = request.jadwal_id or self._jadwal_default()
@@ -151,6 +173,20 @@ class BioskopServicer(pb_grpc.BioskopServicer):
                         kursi=pb.Kursi(id=row[2], status=row[3], pemesan=row[4])
                         if row[2] else None,
                         kode_booking=row[5] or "")
+            if request.jadwal_id and not c.execute(
+                    "SELECT 1 FROM jadwal WHERE id=?", (jid,)).fetchone():
+                return pb.PesanResponse(
+                    sukses=False,
+                    pesan=f"Jadwal {jid} tidak tersedia.")
+            if not request.kursi_id.strip():
+                return pb.PesanResponse(
+                    sukses=False, pesan="Nomor kursi wajib diisi.")
+            if not request.nama.strip():
+                return pb.PesanResponse(
+                    sukses=False, pesan="Nama pemesan wajib diisi.")
+            if not request.kode_booking.strip():
+                return pb.PesanResponse(
+                    sukses=False, pesan="Kode booking wajib diisi.")
             kursi = c.execute(
                 "SELECT status, pemesan, kode_booking FROM kursi "
                 "WHERE jadwal_id=? AND kursi_id=?",
