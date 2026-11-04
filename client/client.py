@@ -1,19 +1,3 @@
-"""Client CLI Seatlock + uji beban. Cadangan demo jika web bermasalah.
-
-Jalankan dari folder bioskop-rpc, server sudah aktif:
-    python client/client.py jadwal
-    python client/client.py lihat --jadwal J1
-    python client/client.py pesan A3 --nama Budi --jadwal J1
-    python client/client.py batal A3 --nama Budi --kode ABC123 --jadwal J1
-    python client/client.py pantau --jadwal J1
-    python client/client.py beban --n 5
-    python client/client.py race --n 20 --kursi A1 --jadwal J2
-
-Timeout dan retry: retry HANYA untuk DEADLINE_EXCEEDED / UNAVAILABLE dan
-SELALU membawa request_id yang sama, supaya tidak terjadi pemesanan ganda.
-Backoff: 0,5 detik, 1 detik, lalu 2 detik.
-"""
-
 import argparse
 import concurrent.futures
 import sys
@@ -79,9 +63,9 @@ def cmd_lihat(stub, args):
 def cmd_pesan(stub, args):
     res = pesan_dengan_retry(stub, args.jadwal, args.kursi, args.nama,
                              request_id=args.request_id)
-    print(res.pesan)
-    if res.kode_booking:
-        print(f"Kode booking Anda: {res.kode_booking} "
+    print(res.pesan)  # type: ignore[union-attr]
+    if res.kode_booking:  # type: ignore[union-attr]
+        print(f"Kode booking Anda: {res.kode_booking} "  # type: ignore[union-attr]
               f"(simpan kode ini untuk membatalkan)")
 
 
@@ -90,7 +74,7 @@ def cmd_batal(stub, args):
     res = stub.BatalkanPesanan(pb.BatalRequest(
         jadwal_id=args.jadwal, kursi_id=args.kursi, nama=args.nama,
         request_id=rid, kode_booking=args.kode), timeout=2.0)
-    print(res.pesan)
+    print(res.pesan)  # type: ignore[union-attr]
 
 
 def cmd_pantau(stub, args):
@@ -134,7 +118,7 @@ def cmd_race(stub, args):
                                      f"Client-{i}",
                                      request_id=f"race-{args.jadwal}-{i}",
                                      maks=1)
-            return res.sukses
+            return res.sukses  # type: ignore[union-attr]
         except Exception:
             return False
 

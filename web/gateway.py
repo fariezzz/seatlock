@@ -1,27 +1,3 @@
-"""Gateway HTTP -> gRPC untuk Seatlock (Tier 1 Ringan).
-
-Hanya memakai pustaka standar Python + grpcio (tidak perlu Flask).
-Browser TIDAK memanggil gRPC langsung; gateway menerjemahkan HTTP
-menjadi RPC, dan meneruskan request_id apa adanya supaya retry dari
-browser tidak membuat pemesanan ganda.
-
-Jalankan dari folder bioskop-rpc (server gRPC sudah aktif):
-    python web/gateway.py [--grpc localhost:50051] [--port 8000]
-Lalu buka http://localhost:8000/ di browser mesin mana pun yang satu
-jaringan dengan mesin gateway.
-
-Endpoint:
-    GET  /api/jadwal               -> DaftarJadwal
-    GET  /api/kursi?jadwal=J1      -> LihatKursi
-    POST /api/pesan                -> PesanKursi
-         {"jadwal_id","kursi_id","nama","request_id"}
-    POST /api/batal                -> BatalkanPesanan
-         {"jadwal_id","kursi_id","nama","request_id","kode_booking"}
-    GET  /api/stream?jadwal=J1     -> StreamingStatusKursi, diubah jadi SSE
-Timeout gateway (5 detik) sengaja LEBIH PANJANG dari timeout gRPC
-(2 detik), supaya gateway tidak timeout duluan saat gRPC masih bekerja.
-"""
-
 import argparse
 import json
 import os

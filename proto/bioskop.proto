@@ -2,13 +2,6 @@ syntax = "proto3";
 
 package bioskop;
 
-// Layanan reservasi tiket bioskop Seatlock, versi Tier 1 Ringan.
-// 5 RPC, termasuk 1 streaming. Perubahan dari v1:
-//  - DaftarJadwal (baru): daftar jadwal tayang preset.
-//  - jadwal_id di Pesan/Batal/Lihat/Streaming: tiap jadwal punya peta kursi sendiri.
-//  - kode_booking: dikembalikan hanya ke pemesan yang berhasil (PesanResponse),
-//    dan wajib dipakai saat membatalkan. Kursi di Lihat/Streaming TIDAK membawa
-//    kode booking, supaya kode tidak bisa dicuri dari peta kursi.
 service Bioskop {
   rpc PesanKursi (PesanRequest) returns (PesanResponse);
   rpc BatalkanPesanan (BatalRequest) returns (PesanResponse);

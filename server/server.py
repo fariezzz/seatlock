@@ -1,27 +1,3 @@
-"""Server gRPC Seatlock, Tier 1 Ringan.
-
-Perubahan dari v1 (in-memory):
-  - State disimpan di SQLite (seatlock.db di folder server/), bukan memori.
-    Restart server TIDAK menghilangkan pesanan maupun tabel deduplikasi.
-  - Tiap jadwal tayang preset punya peta kursi sendiri (20 kursi: A1-A10, B1-B10).
-  - Pemesanan berhasil mengembalikan kode_booking 6 karakter. Kode itu TIDAK
-    pernah dikirim lewat Lihat/Streaming (peta kursi hanya membawa id, status,
-    pemesan), dan WAJIB dipakai saat membatalkan, bersama nama pemesan.
-
-Semua operasi tulis tetap dilindungi satu threading.Lock DAN transaksi
-SQLite: constraint UNIQUE pada request_id membuat dedup bertahan melewati
-restart, dan constraint PRIMARY KEY (jadwal_id, kursi_id) mencegah kursi
-ganda di tingkat database, bukan hanya di kode.
-
-Jadwal preset (seed saat DB pertama kali dibuat):
-  J1  Petualangan Langit  14:00  Studio 1
-  J2  Kota Senja          17:00  Studio 1
-  J3  Malam Bintang       20:00  Studio 2
-
-Jalankan dari folder bioskop-rpc:
-    python server/server.py [--port 50051] [--host 0.0.0.0] [--unix /tmp/bioskop.sock]
-"""
-
 import argparse
 import os
 import random
