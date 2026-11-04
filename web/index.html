@@ -1,510 +1,3034 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Seatlock | Reservasi Tiket Bioskop</title>
-<meta name="description" content="Pesan kursi bioskop dalam hitungan detik. Pilih jadwal, pilih kursi, terima kode booking.">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-<style>
-:root {
-  --ink:#0d1117; --ink-2:#3d4350; --ink-3:#6b7280;
-  --line:#e8eaf0; --line-2:#f3f4f6; --bg:#f7f8fa; --surface:#ffffff;
-  --accent:#2563eb; --accent-dk:#1d4ed8; --accent-lt:#eff6ff; --accent-mid:#dbeafe;
-  --gold:#d97706; --green:#16a34a; --green-lt:#f0fdf4;
-  --red:#dc2626; --red-lt:#fef2f2;
-  --sh-sm:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --sh-md:0 4px 16px rgba(0,0,0,.07),0 1px 4px rgba(0,0,0,.04);
-  --sh-lg:0 8px 32px rgba(0,0,0,.10),0 2px 8px rgba(0,0,0,.05);
-  --r-sm:8px; --r-md:12px; --r-lg:16px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
-body{font-family:'Inter',system-ui,-apple-system,sans-serif;font-size:15px;color:var(--ink);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;}
-a{color:var(--accent);text-decoration:none;}
-button{font:inherit;cursor:pointer;border:none;background:none;}
-::-webkit-scrollbar{width:0;height:0;}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Seatlock — Cinema Ticket Reservation | Tiket Bioskop Real-Time</title>
+  <meta name="description"
+    content="Seatlock — Platform reservasi tiket bioskop modern, cepat, dan real-time. Pilih film favorit, tentukan kursi di denah studio interaktif, dan dapatkan kode booking resmi.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #07090e;
+      --bg-surface: #0d1322;
+      --bg-card: #131c31;
+      --bg-card-hover: #192542;
+      --bg-card-subtle: #0f182c;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-card: #1f2c4a;
+      --border-card-hover: #314470;
 
-/* layout */
-.wrap{max-width:1100px;margin:0 auto;padding:0 24px;}
-.wrap-n{max-width:760px;margin:0 auto;padding:0 24px;}
+      --primary: #2563eb;
+      --primary-light: #3b82f6;
+      --primary-glow: rgba(59, 130, 246, 0.4);
+      --primary-soft: rgba(37, 99, 235, 0.14);
 
-/* nav */
-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);}
-.nav-inner{display:flex;align-items:center;justify-content:space-between;height:60px;}
-.logo{font-size:18px;font-weight:600;color:var(--ink);letter-spacing:-.02em;}
-.logo em{color:var(--accent);font-style:normal;}
-.nav-links{display:flex;align-items:center;gap:28px;}
-.nav-links a{font-size:14px;font-weight:500;color:var(--ink-2);transition:color .15s;}
-.nav-links a:hover{color:var(--accent);}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-.hamburger{display:none;padding:6px;color:var(--ink);}
+      --gold: #f59e0b;
+      --gold-light: #fbbf24;
+      --gold-glow: rgba(245, 158, 11, 0.35);
+      --gold-soft: rgba(245, 158, 11, 0.12);
 
-/* hero */
-.hero{background:var(--surface);border-bottom:1px solid var(--line);padding:88px 0 80px;text-align:center;}
-.hero-eyebrow{display:inline-flex;align-items:center;font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:var(--accent-lt);border:1px solid var(--accent-mid);border-radius:99px;padding:4px 12px;margin-bottom:28px;}
-.hero h1{font-size:clamp(30px,5vw,52px);font-weight:600;letter-spacing:-.03em;line-height:1.1;color:var(--ink);max-width:700px;margin:0 auto 20px;}
-.hero-sub{font-size:17px;color:var(--ink-3);max-width:480px;margin:0 auto 40px;line-height:1.65;}
-.hero-actions{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;}
-.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;border-radius:var(--r-sm);transition:background .15s,transform .1s;text-decoration:none;}
-.btn-primary:hover{background:var(--accent-dk);transform:translateY(-1px);color:#fff;}
-.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border:1.5px solid var(--line);color:var(--ink-2);font-size:15px;font-weight:500;border-radius:var(--r-sm);background:var(--surface);transition:border-color .15s,color .15s;text-decoration:none;}
-.btn-ghost:hover{border-color:var(--accent);color:var(--accent);}
-.hero-stats{display:flex;justify-content:center;gap:48px;margin-top:56px;padding-top:40px;border-top:1px solid var(--line);flex-wrap:wrap;}
-.hero-stat b{display:block;font-size:28px;font-weight:700;letter-spacing:-.02em;color:var(--ink);margin-bottom:2px;}
-.hero-stat span{font-size:13px;color:var(--ink-3);}
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.35);
+      --emerald-soft: rgba(16, 185, 129, 0.12);
 
-/* section */
-.section{padding:64px 0;}
-.section-alt{background:var(--surface);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
-.section-hd{margin-bottom:36px;}
-.section-hd h2{font-size:24px;font-weight:600;letter-spacing:-.02em;color:var(--ink);margin-bottom:6px;}
-.section-hd p{font-size:14px;color:var(--ink-3);}
+      --rose: #ef4444;
+      --rose-glow: rgba(239, 68, 68, 0.35);
+      --rose-soft: rgba(239, 68, 68, 0.12);
 
-/* film cards */
-.film-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-.film-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--sh-sm);cursor:pointer;transition:box-shadow .2s,transform .15s,border-color .2s;}
-.film-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px);border-color:#c7d8fc;}
-.film-card.active{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-mid),var(--sh-sm);}
-.film-cover{height:100px;display:flex;align-items:flex-end;padding:14px 16px;}
-.film-cover-title{font-size:15px;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4);line-height:1.25;}
-.film-body{padding:14px 16px 16px;}
-.film-meta{font-size:12px;color:var(--ink-3);margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;}
-.occ-wrap{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
-.occ-bar{flex:1;height:5px;background:var(--line-2);border-radius:99px;overflow:hidden;}
-.occ-fill{height:100%;background:var(--accent);border-radius:99px;transition:width .4s;}
-.occ-label{font-size:11px;color:var(--ink-3);white-space:nowrap;}
-.btn-pilih{width:100%;padding:9px;font-size:13px;font-weight:600;border-radius:var(--r-sm);border:1.5px solid var(--line);color:var(--ink-2);background:var(--bg);transition:all .15s;}
-.btn-pilih:hover,.film-card.active .btn-pilih{background:var(--accent);border-color:var(--accent);color:#fff;}
+      --text-main: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
 
-/* booking */
-.booking-layout{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start;}
-.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--sh-sm);overflow:hidden;}
-.panel-hd{padding:18px 22px 16px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.panel-hd h3{font-size:16px;font-weight:600;color:var(--ink);}
-.panel-hd .meta-tag{font-size:12px;color:var(--ink-3);background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:3px 10px;white-space:nowrap;}
-.panel-body{padding:20px 22px;}
+      --radius-xs: 6px;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --radius-xl: 28px;
 
-/* screen */
-.screen{text-align:center;margin-bottom:22px;}
-.screen-bar{display:inline-block;width:60%;padding:6px 20px;font-size:10px;font-weight:700;letter-spacing:.18em;color:var(--accent);background:var(--accent-lt);border:1px solid var(--accent-mid);border-radius:0 0 40px 40px;}
-.screen-shadow{height:12px;background:linear-gradient(to bottom,rgba(37,99,235,.07),transparent);border-radius:0 0 40px 40px;width:70%;margin:0 auto;}
+      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.7);
+      --shadow-glow: 0 0 25px var(--primary-glow);
+    }
 
-/* seats */
-.seat-area{user-select:none;}
-.seat-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
-.row-lbl{width:18px;font-size:11px;font-weight:700;color:var(--ink-3);text-align:center;flex-shrink:0;}
-.seat-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;flex:1;}
-.seat{aspect-ratio:1;border:1.5px solid var(--line);border-radius:6px;font-size:10px;font-weight:600;color:var(--ink-2);background:var(--surface);transition:all .12s;padding:0;display:flex;align-items:center;justify-content:center;}
-.seat:hover:not(:disabled){border-color:var(--accent);background:var(--accent-lt);color:var(--accent);transform:scale(1.08);}
-.seat.selected{background:var(--accent);border-color:var(--accent);color:#fff;transform:scale(1.08);box-shadow:0 2px 8px rgba(37,99,235,.35);}
-.seat.booked{background:var(--line-2);border-color:var(--line);color:#c4c9d4;cursor:not-allowed;}
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-/* legend */
-.seat-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:18px;padding-top:16px;border-top:1px solid var(--line-2);align-items:center;}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-3);}
-.legend-swatch{width:14px;height:14px;border-radius:4px;border:1.5px solid var(--line);background:var(--surface);flex-shrink:0;}
-.legend-swatch.sel{background:var(--accent);border-color:var(--accent);}
-.legend-swatch.bk{background:var(--line-2);border-color:var(--line);}
-.legend-right{margin-left:auto;font-size:12px;color:var(--ink-3);}
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 80px;
+    }
 
-/* panel actions */
-.panel-actions{padding:12px 22px;border-top:1px solid var(--line-2);display:flex;gap:8px;}
-.btn-sm{font-size:12px;font-weight:500;color:var(--ink-2);padding:6px 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface);transition:all .15s;}
-.btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+    body {
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      color: var(--text-main);
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(37, 99, 235, 0.15), transparent 70%),
+        radial-gradient(ellipse 70% 50% at 80% 40%, rgba(245, 158, 11, 0.05), transparent 60%),
+        radial-gradient(ellipse 60% 40% at 10% 80%, rgba(37, 99, 235, 0.08), transparent 50%);
+      background-attachment: fixed;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+    }
 
-/* summary */
-.sum-rows{margin-bottom:18px;}
-.sum-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-2);font-size:14px;}
-.sum-row:last-child{border-bottom:none;}
-.sum-row .lbl{color:var(--ink-3);}
-.sum-row .val{font-weight:600;color:var(--ink);text-align:right;}
-.sum-row .val.empty{color:var(--ink-3);font-weight:400;}
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
 
-/* form */
-.form-group{margin-bottom:14px;}
-.form-label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px;}
-.form-input{width:100%;padding:10px 12px;font:inherit;font-size:14px;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r-sm);outline:none;transition:border-color .15s,box-shadow .15s;}
-.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-mid);}
-.form-input::placeholder{color:#b0b8c8;}
-.btn-book{width:100%;padding:12px;background:var(--accent);color:#fff;font-size:15px;font-weight:600;border-radius:var(--r-sm);transition:background .15s,transform .1s;margin-top:4px;}
-.btn-book:hover{background:var(--accent-dk);transform:translateY(-1px);}
-.btn-book:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
 
-/* messages */
-.msg{border-radius:var(--r-sm);padding:11px 14px;font-size:13px;margin-top:12px;display:none;line-height:1.5;}
-.msg.ok{display:block;background:var(--green-lt);color:#14532d;border:1px solid #bbf7d0;}
-.msg.err{display:block;background:var(--red-lt);color:#991b1b;border:1px solid #fecaca;}
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
 
-/* kode box */
-.kode-box{display:none;margin-top:14px;padding:16px;background:#fffbeb;border:1px solid #fde68a;border-radius:var(--r-sm);}
-.kode-box.show{display:block;}
-.kode-label{font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;}
-.kode-val{font-size:26px;font-weight:700;letter-spacing:.12em;color:var(--ink);font-family:ui-monospace,'SF Mono',Menlo,monospace;margin-bottom:8px;}
-.kode-note{font-size:12px;color:var(--gold);line-height:1.5;margin-bottom:10px;}
-.btn-copy{font-size:12px;font-weight:600;color:var(--ink-2);padding:6px 14px;border:1px solid var(--line);border-radius:6px;background:var(--surface);transition:all .15s;}
-.btn-copy:hover{border-color:var(--accent);color:var(--accent);}
-.divider{height:1px;background:var(--line-2);margin:20px 0;}
-.cancel-hd{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:4px;}
-.cancel-sub{font-size:12px;color:var(--ink-3);margin-bottom:14px;line-height:1.55;}
-.btn-cancel{width:100%;padding:10px;font-size:14px;font-weight:600;color:var(--red);border:1.5px solid #fecaca;border-radius:var(--r-sm);background:var(--surface);transition:all .15s;margin-top:4px;}
-.btn-cancel:hover{background:var(--red-lt);border-color:var(--red);}
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
 
-/* steps */
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
-.step{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:24px 22px;box-shadow:var(--sh-sm);}
-.step-num{width:36px;height:36px;border-radius:10px;background:var(--accent-lt);border:1px solid var(--accent-mid);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:var(--accent);margin-bottom:14px;}
-.step h3{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;}
-.step p{font-size:13px;color:var(--ink-3);line-height:1.6;}
+    ::-webkit-scrollbar-thumb {
+      background: #25334e;
+      border-radius: 99px;
+    }
 
-/* empty states */
-.state-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;text-align:center;color:var(--ink-3);}
-.state-empty svg{opacity:.35;margin-bottom:14px;}
-.state-empty p{font-size:14px;}
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3b82f6;
+    }
 
-/* footer */
-footer{border-top:1px solid var(--line);background:var(--surface);padding:28px 0;margin-top:64px;}
-.footer-inner{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
-.footer-brand{font-size:14px;font-weight:600;color:var(--ink);}
-.footer-brand span{color:var(--ink-3);font-weight:400;}
-.footer-copy{font-size:12px;color:var(--ink-3);}
+    /* Layout Utilities */
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
 
-/* modal */
-.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;}
-.overlay.show{display:flex;}
-.modal{background:var(--surface);border-radius:var(--r-lg);padding:28px;max-width:420px;width:100%;box-shadow:var(--sh-lg);}
-.modal h3{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:8px;}
-.modal p{font-size:14px;color:var(--ink-3);margin-bottom:22px;line-height:1.6;}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;}
-.btn-mc{padding:9px 18px;font-size:14px;font-weight:500;color:var(--ink-2);border:1px solid var(--line);border-radius:var(--r-sm);background:var(--surface);}
-.btn-mx{padding:9px 18px;font-size:14px;font-weight:600;color:#fff;background:var(--red);border-radius:var(--r-sm);transition:background .15s;}
-.btn-mx:hover{background:#b91c1c;}
+    .wrap-narrow {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
 
-/* responsive */
-@media(max-width:900px){.film-grid{grid-template-columns:repeat(2,1fr);}.booking-layout{grid-template-columns:1fr;}.steps{grid-template-columns:1fr;gap:12px;}}
-@media(max-width:600px){.hero{padding:56px 0 48px;}.hero h1{font-size:28px;}.film-grid{grid-template-columns:1fr;}.hero-stats{gap:24px;flex-direction:column;align-items:center;}.nav-links{display:none;}.nav-badge{display:none;}.hamburger{display:block;}.hero-actions{flex-direction:column;align-items:stretch;}.seat{font-size:8px;}}
-</style>
+    /* =====================================================================
+   NAVBAR
+===================================================================== */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 9, 14, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background 0.25s, border-color 0.25s;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 16px var(--primary-glow);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #fff;
+      line-height: 1.1;
+    }
+
+    .brand-title em {
+      font-style: normal;
+      color: var(--primary-light);
+    }
+
+    .brand-subtitle {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color 0.15s, transform 0.15s;
+      position: relative;
+      padding: 6px 0;
+    }
+
+    .nav-links a:hover {
+      color: #fff;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0%;
+      height: 2px;
+      background: var(--primary-light);
+      transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 99px;
+    }
+
+    .nav-links a:hover::after {
+      width: 100%;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn-nav-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-nav-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.5);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .hamburger {
+      display: none;
+      padding: 8px;
+      color: var(--text-secondary);
+      border-radius: var(--radius-xs);
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .hamburger:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Mobile Nav Drawer */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 72px;
+      left: 0;
+      right: 0;
+      background: rgba(10, 15, 26, 0.98);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 24px;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 99;
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-10px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease-out;
+    }
+
+    .mobile-menu.active {
+      display: flex;
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu a {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      transition: all 0.15s;
+    }
+
+    .mobile-menu a:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* =====================================================================
+   HERO SECTION
+===================================================================== */
+    .hero {
+      position: relative;
+      padding: 80px 0 64px;
+      overflow: hidden;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 48px;
+      align-items: center;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 99px;
+      padding: 6px 14px;
+      margin-bottom: 24px;
+    }
+
+    .hero-badge-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+      animation: pulse 2s infinite;
+    }
+
+    .hero h1 {
+      font-size: clamp(34px, 4.4vw, 54px);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.12;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, #ffffff 40%, var(--primary-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 16.5px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      margin-bottom: 36px;
+      max-width: 540px;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 48px;
+    }
+
+    .btn-hero-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 6px 24px rgba(37, 99, 235, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .btn-hero-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.6);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn-hero-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 26px;
+      border: 1.5px solid var(--border-card);
+      color: var(--text-main);
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      background: rgba(19, 28, 49, 0.6);
+      backdrop-filter: blur(8px);
+      transition: all 0.2s;
+    }
+
+    .btn-hero-secondary:hover {
+      background: var(--bg-card);
+      border-color: var(--primary-light);
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* Hero Stats Strip */
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      padding: 20px 24px;
+      background: rgba(14, 20, 35, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .hero-stat b {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      margin-bottom: 4px;
+    }
+
+    .hero-stat span {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Hero Visual Showcase */
+    .hero-visual {
+      position: relative;
+      transform: translateY(-40px);
+    }
+
+    .cinema-preview-card {
+      position: relative;
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xl);
+      padding: 24px;
+      box-shadow: var(--shadow-lg), 0 0 40px rgba(37, 99, 235, 0.15);
+      overflow: hidden;
+    }
+
+    .cinema-preview-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary-light), var(--gold), transparent);
+    }
+
+    .preview-screen-bar {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .preview-curve {
+      height: 20px;
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.45) 0%, rgba(59, 130, 246, 0.05) 100%);
+      border-top: 3px solid var(--primary-light);
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      position: relative;
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+    }
+
+    .preview-screen-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      color: var(--primary-light);
+      margin-top: 8px;
+    }
+
+    .preview-mini-seats {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .mini-seat-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .mini-seat {
+      width: 18px;
+      height: 16px;
+      border-radius: 3px 3px 2px 2px;
+      background: #1e293b;
+      border: 1px solid #334155;
+    }
+
+    .mini-seat.occ {
+      background: #334155;
+      border-color: #475569;
+      opacity: 0.5;
+    }
+
+    .mini-seat.sel {
+      background: var(--primary-light);
+      border-color: #60a5fa;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .preview-ticket-mock {
+      background: rgba(9, 14, 25, 0.9);
+      border: 1px dashed rgba(245, 158, 11, 0.4);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .preview-ticket-info h4 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .preview-ticket-info p {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+    }
+
+    .preview-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 99px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      font-size: 11px;
+      font-weight: 700;
+      color: #34d399;
+    }
+
+    /* =====================================================================
+   SECTION COMMON
+===================================================================== */
+    .section {
+      padding: 80px 0;
+      position: relative;
+    }
+
+    .section-alt {
+      background: rgba(13, 19, 34, 0.5);
+      border-top: 1px solid var(--border-subtle);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-hd {
+      margin-bottom: 44px;
+    }
+
+    .section-eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--primary-light);
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+
+    .section-hd h2 {
+      font-size: clamp(26px, 3.2vw, 36px);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .section-hd p {
+      font-size: 15px;
+      color: var(--text-secondary);
+      max-width: 620px;
+    }
+
+    /* =====================================================================
+   FILM & JADWAL (CATALOG)
+===================================================================== */
+    .film-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .film-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .film-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--border-card-hover);
+      box-shadow: var(--shadow-lg), 0 0 25px rgba(59, 130, 246, 0.2);
+    }
+
+    .film-card.active {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 2px var(--primary-light), var(--shadow-lg), 0 0 35px var(--primary-glow);
+    }
+
+    .film-poster-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      overflow: hidden;
+      background: #090e1a;
+    }
+
+    .film-poster-svg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+      display: block;
+    }
+
+    .film-card:hover .film-poster-svg {
+      transform: scale(1.04);
+    }
+
+    .film-poster-badge {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 2;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-xs);
+      background: rgba(10, 15, 26, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      letter-spacing: 0.05em;
+    }
+
+    .film-poster-studio {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 2;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: var(--radius-xs);
+      background: rgba(245, 158, 11, 0.2);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--gold-light);
+      letter-spacing: 0.05em;
+    }
+
+    .film-card-body {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .film-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .film-meta-tags {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+
+    .meta-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-xs);
+      padding: 4px 10px;
+      font-weight: 500;
+    }
+
+    .meta-pill svg {
+      color: var(--primary-light);
+    }
+
+    /* Occupancy Bar */
+    .occ-container {
+      margin-top: auto;
+      margin-bottom: 18px;
+    }
+
+    .occ-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .occ-text {
+      color: var(--text-muted);
+    }
+
+    .occ-count {
+      font-weight: 700;
+      color: var(--emerald);
+    }
+
+    .occ-bar {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .occ-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), #60a5fa);
+      border-radius: 99px;
+      transition: width 0.5s ease;
+    }
+
+    .btn-pilih {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--border-card);
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.04);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-pilih:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--primary-glow);
+    }
+
+    .film-card.active .btn-pilih {
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      border-color: var(--primary-light);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--primary-glow);
+    }
+
+    /* Skeleton Loading Cards */
+    .skeleton-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      height: 480px;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        opacity: 0.5;
+      }
+
+      50% {
+        opacity: 0.8;
+      }
+
+      100% {
+        opacity: 0.5;
+      }
+    }
+
+    /* =====================================================================
+   BOOKING & SEAT SELECTION
+===================================================================== */
+    .booking-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .panel-hd {
+      padding: 22px 28px;
+      border-bottom: 1px solid var(--border-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      background: rgba(14, 21, 37, 0.6);
+    }
+
+    .panel-hd-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .panel-hd h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .panel-hd .meta-tag {
+      font-size: 12.5px;
+      color: var(--gold-light);
+      font-weight: 500;
+    }
+
+    .stream-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 99px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      white-space: nowrap;
+    }
+
+    .stream-status-pill.status-connecting {
+      background: rgba(245, 158, 11, 0.12);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .stream-status-pill.status-error {
+      background: rgba(239, 68, 68, 0.12);
+      border-color: rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .stream-status-pill .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 8px currentColor;
+      animation: pulse 2s infinite;
+    }
+
+    .panel-body {
+      padding: 28px;
+    }
+
+    /* Cinema Screen */
+    .screen-wrap {
+      text-align: center;
+      margin: 10px auto 44px;
+      max-width: 580px;
+    }
+
+    .screen-curved {
+      height: 18px;
+      background: linear-gradient(180deg, rgba(96, 165, 250, 0.7) 0%, rgba(37, 99, 235, 0.1) 100%);
+      border-top: 3px solid #60a5fa;
+      border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.55);
+      position: relative;
+    }
+
+    .screen-beam {
+      height: 36px;
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.15), transparent);
+      border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    }
+
+    .screen-title {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* Seating Hall */
+    .seat-hall-wrapper {
+      overflow-x: auto;
+      padding-bottom: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .seat-area {
+      user-select: none;
+      min-width: 520px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 0 auto;
+      max-width: 640px;
+    }
+
+    .seat-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .row-lbl {
+      width: 28px;
+      height: 28px;
+      border-radius: var(--radius-xs);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .seat-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      gap: 10px;
+      flex: 1;
+    }
+
+    /* Middle Aisle separation between seat 5 and 6 */
+    .seat-grid> :nth-child(5) {
+      margin-right: 18px;
+      position: relative;
+    }
+
+    /* Realistic Cinema Chair Styling */
+    .seat {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: 8px 8px 5px 5px;
+      border: 1.5px solid #2a3b5c;
+      background: linear-gradient(180deg, #1c2740 0%, #131b2e 100%);
+      color: var(--text-main);
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.16s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Headrest accent line inside chair */
+    .seat::before {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 4px;
+      right: 4px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+    }
+
+    /* Seat Cushion accent at bottom */
+    .seat::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 3px;
+      right: 3px;
+      height: 2px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 1px;
+    }
+
+    .seat:hover:not(:disabled) {
+      border-color: var(--primary-light);
+      background: linear-gradient(180deg, #253966 0%, #1a2747 100%);
+      color: #fff;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 14px var(--primary-glow);
+    }
+
+    .seat.selected {
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      border-color: #60a5fa;
+      color: #fff;
+      transform: translateY(-4px) scale(1.08);
+      box-shadow: 0 0 16px var(--primary-glow), 0 6px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    .seat.selected::before {
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    .seat.booked {
+      background: #182030;
+      border-color: #232d42;
+      color: #4b5870;
+      cursor: not-allowed;
+      opacity: 0.65;
+      box-shadow: none;
+    }
+
+    .seat.booked::before {
+      background: #232d42;
+    }
+
+    /* Legend & Controls */
+    .seat-legend {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      flex-wrap: wrap;
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-card);
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .legend-swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px 5px 3px 3px;
+      border: 1.5px solid #2a3b5c;
+      background: linear-gradient(180deg, #1c2740 0%, #131b2e 100%);
+      flex-shrink: 0;
+    }
+
+    .legend-swatch.sel {
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      border-color: #60a5fa;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .legend-swatch.bk {
+      background: #182030;
+      border-color: #232d42;
+      opacity: 0.65;
+    }
+
+    .legend-right {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .legend-right b {
+      color: var(--gold-light);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .panel-actions {
+      padding: 14px 28px;
+      border-top: 1px solid var(--border-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(14, 21, 37, 0.4);
+    }
+
+    .btn-refresh {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      padding: 7px 16px;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-xs);
+      background: rgba(255, 255, 255, 0.03);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+
+    .btn-refresh:hover {
+      border-color: var(--primary-light);
+      color: #fff;
+      background: rgba(37, 99, 235, 0.1);
+    }
+
+    /* =====================================================================
+   BOOKING SUMMARY PANEL
+===================================================================== */
+    .step-tracker {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border-card);
+    }
+
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .step-indicator.active {
+      color: #fff;
+    }
+
+    .step-indicator.done {
+      color: var(--emerald);
+    }
+
+    .step-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .step-indicator.active .step-dot {
+      background: var(--primary);
+      border-color: var(--primary-light);
+      color: #fff;
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .step-indicator.done .step-dot {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: var(--emerald);
+      color: var(--emerald);
+    }
+
+    .sum-ticket-card {
+      background: rgba(10, 15, 28, 0.85);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin-bottom: 22px;
+      position: relative;
+    }
+
+    .sum-rows {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .sum-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13.5px;
+    }
+
+    .sum-row .lbl {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .sum-row .val {
+      font-weight: 700;
+      color: #fff;
+      text-align: right;
+    }
+
+    .sum-row .val.empty {
+      color: var(--text-muted);
+      font-weight: 400;
+      font-style: italic;
+    }
+
+    .sum-row .val.seat-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px 12px;
+      border-radius: var(--radius-xs);
+      background: var(--primary-soft);
+      border: 1px solid var(--primary-light);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 0 12px var(--primary-glow);
+    }
+
+    /* Form Controls */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .input-with-icon {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px 12px 42px;
+      font: inherit;
+      font-size: 14px;
+      color: #fff;
+      background: rgba(9, 14, 25, 0.8);
+      border: 1.5px solid var(--border-card);
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: all 0.15s;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+      background: rgba(13, 20, 36, 0.95);
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .btn-book {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary), #1d4ed8);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-book:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 26px rgba(37, 99, 235, 0.6);
+    }
+
+    .btn-book:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Feedback Messages */
+    .msg {
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-top: 16px;
+      display: none;
+      line-height: 1.5;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .msg.ok {
+      display: flex;
+      background: var(--emerald-soft);
+      color: #a7f3d0;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    .msg.err {
+      display: flex;
+      background: var(--rose-soft);
+      color: #fecaca;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    /* Luxury E-Ticket Confirmation Box */
+    .kode-box {
+      display: none;
+      margin-top: 22px;
+      padding: 22px;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(15, 23, 42, 0.95));
+      border: 1.5px dashed var(--gold);
+      border-radius: var(--radius-md);
+      position: relative;
+      box-shadow: 0 8px 24px var(--gold-soft);
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    .kode-box.show {
+      display: block;
+    }
+
+    .ticket-ribbon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold-light);
+      margin-bottom: 10px;
+    }
+
+    .kode-val {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 12px;
+      text-shadow: 0 0 16px var(--gold-glow);
+      word-break: break-all;
+    }
+
+    .kode-note {
+      font-size: 12px;
+      color: #fef3c7;
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #fff;
+      padding: 9px 18px;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      border-radius: var(--radius-xs);
+      background: rgba(245, 158, 11, 0.2);
+      transition: all 0.15s;
+    }
+
+    .btn-copy:hover {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #000;
+    }
+
+    /* Accordion for Cancellation */
+    .cancel-card {
+      margin-top: 24px;
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-md);
+      background: rgba(14, 21, 37, 0.4);
+      overflow: hidden;
+    }
+
+    .cancel-header {
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.02);
+      transition: background 0.15s;
+    }
+
+    .cancel-header:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .cancel-header-title {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .cancel-header-icon {
+      transition: transform 0.2s ease;
+      color: var(--text-muted);
+    }
+
+    .cancel-header.active .cancel-header-icon {
+      transform: rotate(180deg);
+    }
+
+    .cancel-body {
+      display: none;
+      padding: 18px;
+      border-top: 1px solid var(--border-card);
+    }
+
+    .cancel-body.active {
+      display: block;
+    }
+
+    .cancel-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    .btn-cancel {
+      width: 100%;
+      padding: 11px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #f87171;
+      border: 1.5px solid rgba(239, 68, 68, 0.3);
+      border-radius: var(--radius-sm);
+      background: rgba(239, 68, 68, 0.08);
+      transition: all 0.15s;
+    }
+
+    .btn-cancel:hover {
+      background: var(--rose);
+      border-color: var(--rose);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--rose-glow);
+    }
+
+    /* =====================================================================
+   CARA PESAN (HOW IT WORKS)
+===================================================================== */
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 32px 26px;
+      box-shadow: var(--shadow-sm);
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .step-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-card-hover);
+      box-shadow: var(--shadow-md);
+    }
+
+    .step-icon-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.05));
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary-light);
+      margin-bottom: 20px;
+    }
+
+    .step-num-pill {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .step-card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .step-card p {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* =====================================================================
+   MODAL CONFIRMATION
+===================================================================== */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 5, 10, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .overlay.show {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: var(--shadow-lg), 0 0 40px rgba(0, 0, 0, 0.8);
+      position: relative;
+      animation: scaleUp 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-icon-wrap {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--rose-soft);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--rose);
+      margin-bottom: 18px;
+    }
+
+    .modal h3 {
+      font-size: 19px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .modal p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 26px;
+      line-height: 1.6;
+    }
+
+    .modal p b {
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-mc {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.04);
+      transition: all 0.15s;
+    }
+
+    .btn-mc:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+
+    .btn-mx {
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+      background: var(--rose);
+      border-radius: var(--radius-sm);
+      box-shadow: 0 4px 14px var(--rose-glow);
+      transition: all 0.15s;
+    }
+
+    .btn-mx:hover {
+      background: #dc2626;
+      box-shadow: 0 6px 20px var(--rose-glow);
+    }
+
+    /* =====================================================================
+   FOOTER
+===================================================================== */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      background: #05070c;
+      padding: 64px 0 40px;
+      margin-top: 60px;
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    .footer-brand-desc {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.65;
+      margin-top: 14px;
+      max-width: 360px;
+    }
+
+    .footer-col h4 {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #fff;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-links a {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      transition: color 0.15s;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary-light);
+    }
+
+    .footer-specs-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+    }
+
+    .footer-spec-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--text-secondary);
+    }
+
+    .footer-bottom {
+      padding-top: 32px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* =====================================================================
+   ANIMATIONS & EMPTY STATES
+===================================================================== */
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.4;
+        transform: scale(0.9);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes scaleUp {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    .state-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 56px 24px;
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .state-empty svg {
+      opacity: 0.35;
+      margin-bottom: 16px;
+    }
+
+    .state-empty p {
+      font-size: 14px;
+      max-width: 320px;
+    }
+
+    /* =====================================================================
+   RESPONSIVE QUERIES
+===================================================================== */
+    @media (max-width: 1024px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+      }
+
+      .hero-visual {
+        max-width: 520px;
+        margin: 0 auto;
+        transform: none;
+      }
+
+      .booking-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .film-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+
+      .nav-links,
+      .nav-actions .btn-nav-cta {
+        display: none;
+      }
+
+      .hamburger {
+        display: block;
+      }
+
+      .hero {
+        padding: 48px 0 36px;
+      }
+
+      .hero h1 {
+        font-size: 32px;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .film-grid {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+        margin: 0 auto;
+      }
+
+      .steps-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .footer-top {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+
+      .footer-bottom {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .wrap {
+        padding: 0 16px;
+      }
+
+      .panel-body {
+        padding: 20px 16px;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .btn-hero-primary,
+      .btn-hero-secondary {
+        justify-content: center;
+      }
+
+      .seat-legend {
+        gap: 14px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-<nav>
-  <div class="wrap nav-inner">
-    <a class="logo" href="#hero">Seat<em>lock</em></a>
-    <div class="nav-links">
-      <a href="#film">Film &amp; Jadwal</a>
-      <a href="#pesan">Pesan Kursi</a>
-      <a href="#cara">Cara Pesan</a>
-    </div>
-    <button class="hamburger" aria-label="Menu" onclick="toggleMenu()">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <line x1="3" y1="6" x2="19" y2="6"/><line x1="3" y1="11" x2="19" y2="11"/><line x1="3" y1="16" x2="19" y2="16"/>
-      </svg>
-    </button>
-  </div>
-</nav>
-
-<section class="hero" id="hero">
-  <div class="wrap-n">
-    <h1>Pesan kursi bioskop dalam hitungan detik.</h1>
-    <p class="hero-sub">Pilih film dan jadwal, tentukan kursi Anda di peta interaktif, dan simpan kode booking untuk membatalkan kapan saja.</p>
-    <div class="hero-actions">
-      <a class="btn-primary" href="#film">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="6"/><polygon points="6.5,5.5 11,8 6.5,10.5" fill="currentColor" stroke="none"/></svg>
-        Pilih Jadwal
+  <!-- NAVIGATION BAR -->
+  <nav>
+    <div class="wrap nav-inner">
+      <a class="brand" href="#hero">
+        <div class="brand-text">
+          <span class="brand-title">Seat<em>lock</em></span>
+          <span class="brand-subtitle">Cinema Ticketing</span>
+        </div>
       </a>
-      <a class="btn-ghost" href="#cara">Cara Pesan</a>
-    </div>
-    <div class="hero-stats">
-      <div class="hero-stat"><b id="statJadwal">—</b><span>jadwal tayang</span></div>
-      <div class="hero-stat"><b>20</b><span>kursi per jadwal</span></div>
-      <div class="hero-stat"><b id="statTersedia">—</b><span>kursi tersedia hari ini</span></div>
-    </div>
-  </div>
-</section>
 
-<section class="section" id="film">
-  <div class="wrap">
-    <div class="section-hd">
-      <h2>Film &amp; Jadwal</h2>
-      <p>Pilih satu jadwal untuk membuka peta kursinya.</p>
-    </div>
-    <div class="film-grid" id="filmGrid">
-      <div class="state-empty" style="grid-column:1/-1">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 2v5M8 2v5M2 12h20"/></svg>
-        <p>Memuat jadwal…</p>
+      <div class="nav-links">
+        <a href="#hero">Beranda</a>
+        <a href="#film">Film &amp; Jadwal</a>
+        <a href="#pesan">Pesan Tiket</a>
+        <a href="#cara">Cara Pesan</a>
+      </div>
+
+      <div class="nav-actions">
+        <a class="btn-nav-cta" href="#film">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+            <line x1="2" y1="10" x2="22" y2="10"></line>
+          </svg>
+          Pesan Sekarang
+        </a>
+        <button class="hamburger" aria-label="Toggle Menu" onclick="toggleMenu()">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round">
+            <line x1="4" y1="7" x2="20" y2="7"></line>
+            <line x1="4" y1="12" x2="20" y2="12"></line>
+            <line x1="4" y1="17" x2="20" y2="17"></line>
+          </svg>
+        </button>
       </div>
     </div>
-  </div>
-</section>
+  </nav>
 
-<section class="section section-alt" id="pesan">
-  <div class="wrap">
-    <div class="section-hd">
-      <h2>Pesan Kursi</h2>
-      <p>Kursi abu-abu sudah terpesan. Klik kursi kosong untuk memilihnya.</p>
-    </div>
-    <div class="booking-layout">
-      <div class="panel">
-        <div class="panel-hd">
-          <h3 id="seatPanelTitle">Peta Kursi</h3>
-          <span class="meta-tag" id="seatPanelMeta">Pilih jadwal dulu</span>
-        </div>
-        <div class="panel-body">
-          <div class="screen">
-            <div class="screen-bar">LAYAR</div>
-            <div class="screen-shadow"></div>
+  <!-- MOBILE MENU DRAWER -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#hero" onclick="toggleMenu()">Beranda</a>
+    <a href="#film" onclick="toggleMenu()">Film &amp; Jadwal Tayang</a>
+    <a href="#pesan" onclick="toggleMenu()">Peta &amp; Pemilihan Kursi</a>
+    <a href="#cara" onclick="toggleMenu()">Panduan Cara Pesan</a>
+  </div>
+
+  <!-- HERO SECTION -->
+  <section class="hero" id="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div class="hero-content">
+          <h1>
+            Pengalaman Menonton Terbaik Dimulai dari <span class="gradient-text">Kursi Pilihan Anda.</span>
+          </h1>
+          <p class="hero-desc">
+            Pesan kursi bioskop favorit Anda dalam hitungan detik. Nikmati sistem pemesanan modern dengan sinkronisasi
+            kursi real-time, transparansi okupansi, dan kode booking instan tanpa antre.
+          </p>
+          <div class="hero-actions">
+            <a class="btn-hero-primary" href="#film">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Pesan Tiket Sekarang
+            </a>
+            <a class="btn-hero-secondary" href="#film">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Lihat Jadwal Hari Ini
+            </a>
           </div>
-          <div class="seat-area" id="seatArea">
-            <div class="state-empty">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 17V9a4 4 0 014-4h8a4 4 0 014 4v8"/><rect x="2" y="17" width="4" height="4" rx="1"/><rect x="18" y="17" width="4" height="4" rx="1"/><rect x="6" y="17" width="12" height="5" rx="1"/></svg>
-              <p>Pilih jadwal di atas untuk memuat kursi.</p>
+
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <b id="statJadwal">—</b>
+              <span>Jadwal Tayang Hari Ini</span>
+            </div>
+            <div class="hero-stat">
+              <b>20</b>
+              <span>Kursi per Jadwal (Row A &amp; B)</span>
+            </div>
+            <div class="hero-stat">
+              <b id="statTersedia" style="color: var(--emerald);">—</b>
+              <span>Kursi Tersedia Sekarang</span>
             </div>
           </div>
-          <div class="seat-legend">
-            <div class="legend-item"><div class="legend-swatch"></div>Tersedia</div>
-            <div class="legend-item"><div class="legend-swatch sel"></div>Dipilih</div>
-            <div class="legend-item"><div class="legend-swatch bk"></div>Terpesan</div>
-            <div class="legend-right">Versi: <b id="versiLabel">—</b></div>
-          </div>
         </div>
-        <div class="panel-actions">
-          <button class="btn-sm" onclick="muatKursi()">Muat ulang</button>
-        </div>
-      </div>
 
-      <div class="panel">
-        <div class="panel-hd"><h3>Ringkasan</h3></div>
-        <div class="panel-body">
-          <div class="sum-rows">
-            <div class="sum-row"><span class="lbl">Film</span><span class="val" id="sumFilm">—</span></div>
-            <div class="sum-row"><span class="lbl">Jadwal</span><span class="val" id="sumWaktu">—</span></div>
-            <div class="sum-row"><span class="lbl">Studio</span><span class="val" id="sumStudio">—</span></div>
-            <div class="sum-row"><span class="lbl">Kursi</span><span class="val empty" id="sumKursi">Belum dipilih</span></div>
+        <!-- Hero Visual Showcase -->
+        <div class="hero-visual">
+          <div class="cinema-preview-card">
+            <div class="preview-screen-bar">
+              <div class="preview-curve"></div>
+              <div class="preview-screen-label">CINEMA AUDITORIUM SCREEN</div>
+            </div>
+
+            <div class="preview-mini-seats">
+              <div class="mini-seat-row">
+                <span class="mini-seat"></span><span class="mini-seat occ"></span><span class="mini-seat"></span><span
+                  class="mini-seat occ"></span><span class="mini-seat sel"></span>
+                <span style="width: 10px;"></span>
+                <span class="mini-seat"></span><span class="mini-seat"></span><span class="mini-seat occ"></span><span
+                  class="mini-seat"></span><span class="mini-seat"></span>
+              </div>
+              <div class="mini-seat-row">
+                <span class="mini-seat occ"></span><span class="mini-seat"></span><span class="mini-seat"></span><span
+                  class="mini-seat"></span><span class="mini-seat"></span>
+                <span style="width: 10px;"></span>
+                <span class="mini-seat"></span><span class="mini-seat occ"></span><span class="mini-seat"></span><span
+                  class="mini-seat"></span><span class="mini-seat occ"></span>
+              </div>
+            </div>
+
+            <div class="preview-ticket-mock">
+              <div class="preview-ticket-info">
+                <h4>Distributed RPC Seat Sync</h4>
+                <p>State terjaga di SQLite ACID WAL</p>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label class="form-label" for="nama">Nama pemesan</label>
-            <input class="form-input" id="nama" type="text" placeholder="Nama lengkap Anda" autocomplete="name">
-          </div>
-          <button class="btn-book" id="btnPesan" onclick="klikPesan()">Pesan Kursi</button>
-          <div class="msg" id="pesanMsg"></div>
-          <div class="kode-box" id="kodeBox">
-            <div class="kode-label">Kode Booking</div>
-            <div class="kode-val" id="kodeVal">—</div>
-            <p class="kode-note">Simpan kode ini. Kode wajib dimasukkan saat membatalkan pesanan.</p>
-            <button class="btn-copy" id="btnSalin" onclick="salinKode()">Salin kode</button>
-          </div>
-          <div class="divider"></div>
-          <div class="cancel-hd">Batalkan Pesanan</div>
-          <p class="cancel-sub">Pilih kursi yang sama, isi nama dan kode booking yang Anda terima saat memesan.</p>
-          <div class="form-group">
-            <label class="form-label" for="kodeBatal">Kode booking</label>
-            <input class="form-input" id="kodeBatal" type="text" placeholder="Contoh: A1B2C3" style="text-transform:uppercase;font-family:ui-monospace,monospace;letter-spacing:.08em;">
-          </div>
-          <button class="btn-cancel" id="btnBatal" onclick="klikBatal()">Batalkan Kursi Terpilih</button>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section" id="cara">
-  <div class="wrap">
-    <div class="section-hd">
-      <h2>Cara Pesan</h2>
-      <p>Tiga langkah untuk mengamankan kursi Anda.</p>
-    </div>
-    <div class="steps">
-      <div class="step">
-        <div class="step-num">1</div>
-        <h3>Pilih jadwal</h3>
-        <p>Tentukan film dan jam tayang. Tiap jadwal memiliki peta kursi sendiri yang diperbarui secara real-time.</p>
+  <!-- FILM & JADWAL SECTION -->
+  <section class="section" id="film">
+    <div class="wrap">
+      <div class="section-hd">
+        <span class="section-eyebrow">KATALOG BIOSKOP HARI INI</span>
+        <h2>Film &amp; Jadwal Penayangan</h2>
+        <p>Pilih jadwal tayang yang Anda inginkan untuk melihat denah studio dan memilih kursi yang tersedia.</p>
       </div>
-      <div class="step">
-        <div class="step-num">2</div>
-        <h3>Pilih kursi</h3>
-        <p>Klik satu kursi yang masih tersedia, isi nama Anda, lalu tekan Pesan Kursi untuk mengonfirmasi.</p>
-      </div>
-      <div class="step">
-        <div class="step-num">3</div>
-        <h3>Simpan kode booking</h3>
-        <p>Kode booking ditampilkan satu kali kepada pemesan. Tanpa kode itu, pesanan tidak bisa dibatalkan.</p>
+
+      <div class="film-grid" id="filmGrid">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<footer>
-  <div class="wrap footer-inner">
-    <div>
-      <div class="footer-brand">Seatlock <span>| Reservasi Tiket Bioskop</span></div>
-      <div class="footer-copy" style="margin-top:4px;">Program Studi Informatika, Universitas Siliwangi</div>
+  <!-- PEMILIHAN KURSI & RINGKASAN PEMESANAN -->
+  <section class="section section-alt" id="pesan">
+    <div class="wrap">
+      <div class="section-hd">
+        <span class="section-eyebrow">STUDIO SEATING PLAN</span>
+        <h2>Peta &amp; Pemilihan Kursi</h2>
+        <p>Klik kursi kosong untuk memilih tempat duduk Anda. Kursi terpesan terkunci secara otomatis.</p>
+      </div>
+
+      <div class="booking-layout">
+        <!-- PANEL KIRI: PETA KURSI -->
+        <div class="panel">
+          <div class="panel-hd">
+            <div class="panel-hd-left">
+              <h3 id="seatPanelTitle">Peta Kursi Studio</h3>
+              <span class="meta-tag" id="seatPanelMeta">Pilih jadwal film terlebih dahulu</span>
+            </div>
+          </div>
+
+          <div class="panel-body">
+            <div class="screen-wrap">
+              <div class="screen-curved"></div>
+              <div class="screen-beam"></div>
+              <div class="screen-title">LAYAR BIOSKOP / SCREEN</div>
+            </div>
+
+            <div class="seat-hall-wrapper">
+              <div class="seat-area" id="seatArea">
+                <div class="state-empty">
+                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 17V9a4 4 0 014-4h8a4 4 0 014 4v8"></path>
+                    <rect x="2" y="17" width="4" height="4" rx="1"></rect>
+                    <rect x="18" y="17" width="4" height="4" rx="1"></rect>
+                    <rect x="6" y="17" width="12" height="5" rx="1"></rect>
+                  </svg>
+                  <p>Silakan pilih salah satu jadwal film di atas untuk memuat denah kursi bioskop.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="seat-legend">
+              <div class="legend-item">
+                <div class="legend-swatch"></div>
+                <span>Tersedia</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-swatch sel"></div>
+                <span>Pilihan Anda</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-swatch bk"></div>
+                <span>Sudah Terisi</span>
+              </div>
+              <div class="legend-right">
+                Versi Data: <b id="versiLabel">—</b>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-actions">
+            <button class="btn-refresh" type="button" onclick="muatKursi()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+              </svg>
+              Segarkan Denah Kursi
+            </button>
+            <span style="font-size: 11.5px; color: var(--text-muted);">Maksimal 1 kursi per pemesanan</span>
+          </div>
+        </div>
+
+        <!-- PANEL KANAN: RINGKASAN & FORM PEMESANAN -->
+        <div class="panel">
+          <div class="panel-hd">
+            <h3>Ringkasan Reservasi</h3>
+          </div>
+
+          <div class="panel-body">
+            <div class="step-tracker">
+              <div class="step-indicator done">
+                <span class="step-dot">✓</span>
+                <span>Jadwal</span>
+              </div>
+              <div class="step-indicator active">
+                <span class="step-dot">2</span>
+                <span>Pilih Kursi</span>
+              </div>
+              <div class="step-indicator">
+                <span class="step-dot">3</span>
+                <span>Konfirmasi</span>
+              </div>
+            </div>
+
+            <div class="sum-ticket-card">
+              <div class="sum-rows">
+                <div class="sum-row">
+                  <span class="lbl">Film</span>
+                  <span class="val" id="sumFilm">—</span>
+                </div>
+                <div class="sum-row">
+                  <span class="lbl">Jam Tayang</span>
+                  <span class="val" id="sumWaktu">—</span>
+                </div>
+                <div class="sum-row">
+                  <span class="lbl">Studio</span>
+                  <span class="val" id="sumStudio">—</span>
+                </div>
+                <div class="sum-row">
+                  <span class="lbl">Nomor Kursi</span>
+                  <span class="val empty" id="sumKursi">Belum dipilih</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="nama">Nama Lengkap Pemesan</label>
+              <div class="input-with-icon">
+                <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                  stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <input class="form-input" id="nama" type="text" placeholder="Masukkan nama Anda..." autocomplete="name">
+              </div>
+            </div>
+
+            <button class="btn-book" id="btnPesan" type="button" onclick="klikPesan()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+              Konfirmasi &amp; Pesan Kursi
+            </button>
+
+            <div class="msg" id="pesanMsg"></div>
+
+            <!-- KARTU E-TICKET RESMI SETELAH SUKSES -->
+            <div class="kode-box" id="kodeBox">
+              <div class="ticket-ribbon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                E-TICKET BERHASIL DIPESAN
+              </div>
+              <div class="kode-val" id="kodeVal">—</div>
+              <p class="kode-note">
+                Simpan kode booking ini. Kode resmi ini wajib dimasukkan apabila Anda ingin membatalkan reservasi.
+              </p>
+              <button class="btn-copy" id="btnSalin" type="button" onclick="salinKode()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+                  stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Salin Kode Booking
+              </button>
+            </div>
+
+            <!-- PEMBATALAN TIKET (ACCORDION) -->
+            <div class="cancel-card">
+              <div class="cancel-header" id="cancelToggle" onclick="toggleCancelAccordion()">
+                <div class="cancel-header-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                  </svg>
+                  Ingin Membatalkan Tiket?
+                </div>
+                <svg class="cancel-header-icon" id="cancelChevron" width="16" height="16" viewBox="0 0 24 24"
+                  fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+              <div class="cancel-body" id="cancelBody">
+                <p class="cancel-sub">
+                  Pilih kursi yang ingin dibatalkan di peta, pastikan nama sama dengan pemesan, lalu masukkan kode
+                  booking Anda.
+                </p>
+                <div class="form-group">
+                  <label class="form-label" for="kodeBatal">Kode Booking Tiket</label>
+                  <div class="input-with-icon">
+                    <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                      stroke-width="2" stroke-linecap="round">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <input class="form-input" id="kodeBatal" type="text" placeholder="Contoh: A1B2C3"
+                      style="text-transform:uppercase;font-family:'JetBrains Mono',monospace;letter-spacing:0.12em;">
+                  </div>
+                </div>
+                <button class="btn-cancel" id="btnBatal" type="button" onclick="klikBatal()">
+                  Batalkan Kursi Terpilih
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARA PESAN SECTION -->
+  <section class="section" id="cara">
+    <div class="wrap">
+      <div class="section-hd">
+        <span class="section-eyebrow">PANDUAN PENGGUNA</span>
+        <h2>Cara Memesan Tiket di Seatlock</h2>
+        <p>Tiga langkah mudah untuk mengamankan kursi bioskop favorit Anda dengan cepat.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-num-pill">01</span>
+          <div class="step-icon-badge">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect>
+              <line x1="7" y1="2" x2="7" y2="22"></line>
+              <line x1="17" y1="2" x2="17" y2="22"></line>
+              <line x1="2" y1="12" x2="22" y2="12"></line>
+              <line x1="2" y1="7" x2="7" y2="7"></line>
+              <line x1="2" y1="17" x2="7" y2="17"></line>
+              <line x1="17" y1="17" x2="22" y2="17"></line>
+              <line x1="17" y1="7" x2="22" y2="7"></line>
+            </svg>
+          </div>
+          <h3>1. Pilih Film &amp; Jadwal</h3>
+          <p>
+            Telusuri katalog film kami, periksa jam tayang dan nomor studio, lalu klik "Pilih Jadwal Ini" untuk membuka
+            denah kursi.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-num-pill">02</span>
+          <div class="step-icon-badge">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 17V9a4 4 0 014-4h8a4 4 0 014 4v8"></path>
+              <rect x="2" y="17" width="4" height="4" rx="1"></rect>
+              <rect x="18" y="17" width="4" height="4" rx="1"></rect>
+              <rect x="6" y="17" width="12" height="5" rx="1"></rect>
+            </svg>
+          </div>
+          <h3>2. Tentukan Kursi Favorit</h3>
+          <p>
+            Pilih kursi kosong di baris A atau B pada denah interaktif. Denah diperbarui secara real-time dari server
+            gRPC.
+          </p>
+        </div>
+
+        <div class="step-card">
+          <span class="step-num-pill">03</span>
+          <div class="step-icon-badge">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <h3>3. Konfirmasi &amp; Terima Kode</h3>
+          <p>
+            Masukkan nama pemesan dan klik pesan. Terima kode booking resmi yang dapat Anda salin dan gunakan kapan
+            saja.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODAL PEMBATALAN -->
+  <div class="overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-icon-wrap">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <h3>Batalkan Reservasi Tiket?</h3>
+      <p>
+        Kursi <b id="modalKursi">—</b> akan dibatalkan dan statusnya dikembalikan menjadi tersedia di server gRPC.
+        Tindakan ini tidak dapat diurungkan.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-mc" type="button" onclick="tutupModal()">Tidak, Kembali</button>
+        <button class="btn-mx" type="button" onclick="konfirmBatal()">Ya, Batalkan Tiket</button>
+      </div>
     </div>
   </div>
-</footer>
 
-<div class="overlay" id="modalOverlay">
-  <div class="modal">
-    <h3>Batalkan Pesanan?</h3>
-    <p>Kursi <b id="modalKursi">—</b> akan dikosongkan. Tindakan ini tidak dapat diurungkan.</p>
-    <div class="modal-actions">
-      <button class="btn-mc" onclick="tutupModal()">Tidak, kembali</button>
-      <button class="btn-mx" onclick="konfirmBatal()">Ya, batalkan</button>
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap">
+      <div class="footer-top">
+        <div>
+          <a class="brand" href="#hero">
+            <div class="brand-text">
+              <span class="brand-title">Seat<em>lock</em></span>
+              <span class="brand-subtitle">Cinema Ticketing</span>
+            </div>
+          </a>
+          <p class="footer-brand-desc">
+            Platform reservasi tiket bioskop berstandar komersial dengan arsitektur terdistribusi berbasis HTTP Gateway,
+            gRPC RPC Server, dan SQLite ACID WAL.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Navigasi Cepat</h4>
+          <div class="footer-links">
+            <a href="#hero">Beranda Utama</a>
+            <a href="#film">Katalog Film &amp; Jadwal</a>
+            <a href="#pesan">Peta Kursi Bioskop</a>
+            <a href="#cara">Panduan Cara Reservasi</a>
+          </div>
+        </div>
+
+        <div class="footer-col">
+          <h4>Spesifikasi Sistem</h4>
+          <div class="footer-specs-list">
+            <div class="footer-spec-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              gRPC Microservices Architecture
+            </div>
+            <div class="footer-spec-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+              </svg>
+              Server-Sent Events Real-Time Streaming
+            </div>
+            <div class="footer-spec-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path
+                  d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z">
+                </path>
+              </svg>
+              SQLite ACID WAL Persistence
+            </div>
+            <div class="footer-spec-badge">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 14 14"></polyline>
+              </svg>
+              Idempotent Request Handling
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>&copy; 2026 Seatlock Cinema. All rights reserved.</div>
+      </div>
     </div>
-  </div>
-</div>
+  </footer>
 
-<script>
-let jadwalList=[],jadwalTerpilih=null,kursiList=[],terpilih=null,es=null,pendingBatal=null;
-const GRAD=['linear-gradient(135deg,#1e3a5f,#2563eb)','linear-gradient(135deg,#134e4a,#0d9488)','linear-gradient(135deg,#3b1f63,#7c3aed)'];
-const $=id=>document.getElementById(id);
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const buatId=()=>'web-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-function showMsg(el,t,ok){el.textContent=t;el.className='msg '+(ok?'ok':'err');}
-function clearMsg(){const e=$('pesanMsg');e.className='msg';e.textContent='';}
-function tutupModal(){$('modalOverlay').classList.remove('show');pendingBatal=null;}
-$('modalOverlay').addEventListener('click',e=>{if(e.target===$('modalOverlay'))tutupModal();});
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let jadwalList = [];
+    let jadwalTerpilih = null;
+    let kursiList = [];
+    let terpilih = null;
+    let es = null;
+    let pendingBatal = null;
 
-async function muatJadwal(){
-  try{
-    const d=await(await fetch('/api/jadwal')).json();
-    jadwalList=d.jadwal||[];
-    $('statJadwal').textContent=jadwalList.length;
-    await renderFilmCards();
-    if(jadwalList.length)pilihJadwal(jadwalList[0].id);
-    hitungTersedia();
-  }catch{$('filmGrid').innerHTML='<div class="state-empty" style="grid-column:1/-1"><p>Gagal memuat jadwal. Pastikan server aktif.</p></div>';}
-}
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    const buatId = () => 'web-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 
-async function hitungTersedia(){
-  let total=0;
-  for(const j of jadwalList){
-    try{total+=((await(await fetch('/api/kursi?jadwal='+encodeURIComponent(j.id))).json()).kursi||[]).filter(k=>k.status==='kosong').length;}catch{}
-  }
-  $('statTersedia').textContent=total;
-}
-
-async function renderFilmCards(){
-  const grid=$('filmGrid');grid.innerHTML='';
-  for(let i=0;i<jadwalList.length;i++){
-    const j=jadwalList[i];
-    let booked=0,total=20;
-    try{const d=await(await fetch('/api/kursi?jadwal='+encodeURIComponent(j.id))).json();total=(d.kursi||[]).length||20;booked=(d.kursi||[]).filter(k=>k.status==='terpesan').length;}catch{}
-    const pct=total?Math.round(booked/total*100):0,sisa=total-booked;
-    const card=document.createElement('article');
-    card.className='film-card'+(jadwalTerpilih===j.id?' active':'');
-    card.dataset.id=j.id;
-    card.innerHTML='<div class="film-cover" style="background:'+GRAD[i%GRAD.length]+'"><span class="film-cover-title">'+esc(j.film)+'</span></div>'
-      +'<div class="film-body"><div class="film-meta"><span>'+esc(j.waktu)+'</span><span style="color:#d1d5db">·</span><span>'+esc(j.studio)+'</span></div>'
-      +'<div class="occ-wrap"><div class="occ-bar"><div class="occ-fill" style="width:'+pct+'%"></div></div><span class="occ-label">'+sisa+' tersedia</span></div>'
-      +'<button class="btn-pilih" data-id="'+j.id+'">'+(jadwalTerpilih===j.id?'Jadwal terpilih ✓':'Pilih jadwal ini')+'</button></div>';
-    card.addEventListener('click',()=>{pilihJadwal(j.id);document.getElementById('pesan').scrollIntoView({behavior:'smooth'});});
-    grid.appendChild(card);
-  }
-}
-
-function updateActiveCard(){
-  document.querySelectorAll('.film-card').forEach(c=>{
-    const a=c.dataset.id===jadwalTerpilih;c.classList.toggle('active',a);
-    const b=c.querySelector('.btn-pilih');if(b)b.textContent=a?'Jadwal terpilih ✓':'Pilih jadwal ini';
-  });
-}
-
-function pilihJadwal(id){
-  jadwalTerpilih=id;terpilih=null;clearMsg();$('kodeBox').classList.remove('show');
-  const j=jadwalList.find(x=>x.id===id);
-  if(j){
-    $('seatPanelTitle').textContent=j.film;$('seatPanelMeta').textContent=j.waktu+' · '+j.studio;
-    $('sumFilm').textContent=j.film;$('sumFilm').className='val';
-    $('sumWaktu').textContent=j.waktu;$('sumWaktu').className='val';
-    $('sumStudio').textContent=j.studio;$('sumStudio').className='val';
-  }
-  $('sumKursi').textContent='Belum dipilih';$('sumKursi').className='val empty';
-  updateActiveCard();
-  if(es)es.close();
-  es=new EventSource('/api/stream?jadwal='+encodeURIComponent(id));
-  es.onmessage=e=>{const d=JSON.parse(e.data);kursiList=d.kursi;$('versiLabel').textContent=d.versi;renderKursi();};
-  es.onerror=()=>{};
-  muatKursi();
-}
-
-async function muatKursi(){
-  if(!jadwalTerpilih)return;
-  try{const d=await(await fetch('/api/kursi?jadwal='+encodeURIComponent(jadwalTerpilih))).json();kursiList=d.kursi||[];renderKursi();}catch{}
-}
-
-function renderKursi(){
-  const area=$('seatArea');area.innerHTML='';
-  if(!kursiList.length){area.innerHTML='<div class="state-empty"><p>Kursi tidak tersedia.</p></div>';return;}
-  ['A','B'].forEach(row=>{
-    const rd=document.createElement('div');rd.className='seat-row';
-    const lbl=document.createElement('span');lbl.className='row-lbl';lbl.textContent=row;rd.appendChild(lbl);
-    const gd=document.createElement('div');gd.className='seat-grid';
-    kursiList.filter(k=>k.id.startsWith(row)).forEach(k=>{
-      const btn=document.createElement('button');btn.type='button';
-      btn.className='seat'+(k.status==='terpesan'?' booked':terpilih===k.id?' selected':'');
-      btn.textContent=k.id.slice(1);btn.disabled=k.status==='terpesan';
-      btn.setAttribute('aria-label','Kursi '+k.id+(k.status==='terpesan'?', terpesan oleh '+k.pemesan:', tersedia'));
-      if(k.status==='terpesan')btn.title='Terpesan: '+k.pemesan;
-      btn.addEventListener('click',()=>{terpilih=k.id;$('sumKursi').textContent=k.id;$('sumKursi').className='val';clearMsg();renderKursi();});
-      gd.appendChild(btn);
-    });
-    rd.appendChild(gd);area.appendChild(rd);
-  });
-}
-
-async function klikPesan(){
-  const nama=$('nama').value.trim();clearMsg();
-  if(!terpilih){showMsg($('pesanMsg'),'Pilih satu kursi terlebih dahulu.',false);return;}
-  if(!nama){showMsg($('pesanMsg'),'Isi nama pemesan terlebih dahulu.',false);return;}
-  if(!jadwalTerpilih){showMsg($('pesanMsg'),'Pilih jadwal terlebih dahulu.',false);return;}
-  const btn=$('btnPesan');btn.disabled=true;btn.textContent='Memproses…';
-  try{
-    const body={jadwal_id:jadwalTerpilih,kursi_id:terpilih,nama,request_id:buatId()};
-    const d=await(await fetch('/api/pesan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})).json();
-    showMsg($('pesanMsg'),d.pesan||d.error||'Terjadi kesalahan.',!!d.sukses);
-    if(d.sukses&&d.kode_booking){
-      $('kodeVal').textContent=d.kode_booking;$('kodeBox').classList.add('show');
-      $('kodeBatal').value=d.kode_booking;$('btnSalin').textContent='Salin kode';
-      terpilih=null;$('sumKursi').textContent='Belum dipilih';$('sumKursi').className='val empty';
+    function showMsg(el, t, ok) {
+      el.textContent = t;
+      el.className = 'msg ' + (ok ? 'ok' : 'err');
     }
-    await muatKursi();
-  }catch{showMsg($('pesanMsg'),'Gagal menghubungi server.',false);}
-  finally{btn.disabled=false;btn.textContent='Pesan Kursi';}
-}
 
-function klikBatal(){
-  const nama=$('nama').value.trim(),kode=$('kodeBatal').value.trim().toUpperCase();clearMsg();
-  if(!terpilih){showMsg($('pesanMsg'),'Pilih kursi yang ingin dibatalkan.',false);return;}
-  if(!nama){showMsg($('pesanMsg'),'Isi nama pemesan.',false);return;}
-  if(!kode){showMsg($('pesanMsg'),'Isi kode booking untuk membatalkan.',false);return;}
-  pendingBatal={jadwal_id:jadwalTerpilih,kursi_id:terpilih,nama,request_id:buatId(),kode_booking:kode};
-  $('modalKursi').textContent=terpilih;$('modalOverlay').classList.add('show');
-}
+    function clearMsg() {
+      const e = $('pesanMsg');
+      if (e) {
+        e.className = 'msg';
+        e.textContent = '';
+      }
+    }
 
-async function konfirmBatal(){
-  if(!pendingBatal)return;tutupModal();
-  const btn=$('btnBatal');btn.disabled=true;
-  try{
-    const d=await(await fetch('/api/batal',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pendingBatal)})).json();
-    showMsg($('pesanMsg'),d.pesan||d.error||'Terjadi kesalahan.',!!d.sukses);
-    if(d.sukses){$('kodeBox').classList.remove('show');$('kodeBatal').value='';terpilih=null;$('sumKursi').textContent='Belum dipilih';$('sumKursi').className='val empty';}
-    await muatKursi();
-  }catch{showMsg($('pesanMsg'),'Gagal menghubungi server.',false);}
-  finally{btn.disabled=false;pendingBatal=null;}
-}
+    function tutupModal() {
+      $('modalOverlay').classList.remove('show');
+      pendingBatal = null;
+    }
 
-async function salinKode(){
-  try{await navigator.clipboard.writeText($('kodeVal').textContent);$('btnSalin').textContent='Tersalin ✓';setTimeout(()=>{$('btnSalin').textContent='Salin kode';},2000);}catch{}
-}
+    $('modalOverlay').addEventListener('click', e => {
+      if (e.target === $('modalOverlay')) tutupModal();
+    });
 
-function toggleMenu(){
-  const l=document.querySelector('.nav-links');if(!l)return;
-  if(l.style.display==='flex'){l.style.display='';}
-  else{Object.assign(l.style,{display:'flex',flexDirection:'column',position:'absolute',top:'60px',left:'0',right:'0',background:'#fff',padding:'16px 24px',borderBottom:'1px solid var(--line)',gap:'16px',zIndex:99});}
-}
+    function toggleCancelAccordion() {
+      const body = $('cancelBody');
+      const toggle = $('cancelToggle');
+      body.classList.toggle('active');
+      toggle.classList.toggle('active');
+    }
 
-setInterval(()=>{if(jadwalTerpilih)muatKursi();},10000);
-muatJadwal();
-</script>
+    function setStreamStatus(state, text) {
+      const badge = $('streamStatusBadge');
+      const txt = $('streamStatusText');
+      if (!badge || !txt) return;
+      badge.className = 'stream-status-pill';
+      if (state === 'connected') {
+        badge.classList.add('status-connected');
+      } else if (state === 'connecting') {
+        badge.classList.add('status-connecting');
+      } else if (state === 'error') {
+        badge.classList.add('status-error');
+      }
+      txt.textContent = text;
+    }
+
+    /* HIGH-FIDELITY VECTOR CINEMA POSTERS (2:3 RATIO) */
+    const POSTERS = {
+      'J1': `<svg class="film-poster-svg" viewBox="0 0 300 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#07152d"/>
+        <stop offset="50%" stop-color="#0f2b5c"/>
+        <stop offset="85%" stop-color="#e06927"/>
+        <stop offset="100%" stop-color="#f59e0b"/>
+      </linearGradient>
+      <linearGradient id="jetTrail" x1="0%" y1="100%" x2="0%" y2="0%">
+        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0"/>
+        <stop offset="100%" stop-color="#60a5fa" stop-opacity="0.8"/>
+      </linearGradient>
+    </defs>
+    <rect width="300" height="450" fill="url(#skyGrad)"/>
+    <!-- Stars -->
+    <circle cx="40" cy="50" r="1.5" fill="#fff" opacity="0.6"/>
+    <circle cx="120" cy="30" r="1.2" fill="#fff" opacity="0.8"/>
+    <circle cx="260" cy="70" r="1.5" fill="#fff" opacity="0.7"/>
+    <circle cx="210" cy="40" r="1" fill="#fff" opacity="0.5"/>
+    <circle cx="70" cy="95" r="1.2" fill="#fff" opacity="0.75"/>
+    <!-- Cloud Silhouettes -->
+    <path d="M-20,380 Q40,320 110,360 Q180,310 240,350 Q310,310 330,390 L330,450 L-20,450 Z" fill="#0b1728" opacity="0.95"/>
+    <path d="M-20,400 Q60,360 140,390 Q220,360 320,410 L320,450 L-20,450 Z" fill="#070d18"/>
+    <!-- Jet contrail -->
+    <line x1="150" y1="310" x2="175" y2="135" stroke="url(#jetTrail)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="148" y1="310" x2="173" y2="135" stroke="#ffffff" stroke-width="1.2" opacity="0.8"/>
+    <!-- Supersonic Jet Vector -->
+    <g transform="translate(162, 115) rotate(15) scale(0.95)">
+      <polygon points="12,0 0,35 12,28 24,35" fill="#e2e8f0"/>
+      <polygon points="12,0 12,28 24,35" fill="#94a3b8"/>
+      <polygon points="0,35 12,28 12,38" fill="#3b82f6"/>
+      <polygon points="24,35 12,28 12,38" fill="#1d4ed8"/>
+      <circle cx="12" cy="12" r="3" fill="#38bdf8"/>
+    </g>
+    <!-- Cinematic Vignette Overlay -->
+    <rect width="300" height="450" fill="black" opacity="0.15"/>
+    <!-- Movie Title Block -->
+    <g transform="translate(20, 290)">
+      <text x="0" y="0" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="9" fill="#f59e0b" letter-spacing="3">AN EPIC SKY ADVENTURE</text>
+      <text x="0" y="26" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="22" fill="#ffffff" letter-spacing="-0.5">PETUALANGAN</text>
+      <text x="0" y="50" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="22" fill="#60a5fa" letter-spacing="-0.5">LANGIT</text>
+      <text x="0" y="70" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="10" fill="#cbd5e1" letter-spacing="1">BEYOND THE ATMOSPHERE</text>
+    </g>
+  </svg>`,
+
+      'J2': `<svg class="film-poster-svg" viewBox="0 0 300 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="twilightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#1e0b36"/>
+        <stop offset="45%" stop-color="#581c87"/>
+        <stop offset="70%" stop-color="#be185d"/>
+        <stop offset="100%" stop-color="#f59e0b"/>
+      </linearGradient>
+    </defs>
+    <rect width="300" height="450" fill="url(#twilightGrad)"/>
+    <!-- Dusk Sun -->
+    <circle cx="150" cy="240" r="55" fill="#fef08a" opacity="0.6"/>
+    <!-- City Skyline Silhouettes Layer 1 -->
+    <g fill="#240c38" opacity="0.6">
+      <rect x="20" y="190" width="30" height="150"/>
+      <rect x="60" y="170" width="35" height="170"/>
+      <polygon points="77,150 70,170 85,170"/>
+      <rect x="110" y="200" width="25" height="140"/>
+      <rect x="150" y="180" width="40" height="160"/>
+      <rect x="200" y="160" width="30" height="180"/>
+      <polygon points="215,135 210,160 220,160"/>
+      <rect x="245" y="195" width="35" height="145"/>
+    </g>
+    <!-- Skyline Foreground Layer 2 -->
+    <g fill="#0b0414">
+      <rect x="0" y="230" width="45" height="220"/>
+      <rect x="55" y="210" width="40" height="240"/>
+      <rect x="105" y="225" width="35" height="225"/>
+      <rect x="145" y="200" width="50" height="250"/>
+      <polygon points="170,165 166,200 174,200"/>
+      <rect x="205" y="220" width="40" height="230"/>
+      <rect x="255" y="235" width="45" height="215"/>
+    </g>
+    <!-- Bridge Cables / Glow -->
+    <path d="M-20,330 Q150,280 320,330" stroke="#f59e0b" stroke-width="2" fill="none" opacity="0.6"/>
+    <path d="M0,350 L300,350" stroke="#f43f5e" stroke-width="1.5" opacity="0.7"/>
+    <!-- Movie Title Block -->
+    <g transform="translate(20, 290)">
+      <text x="0" y="0" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="9" fill="#fbbf24" letter-spacing="3">A NEO-NOIR DRAMA</text>
+      <text x="0" y="26" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="24" fill="#ffffff" letter-spacing="-0.5">KOTA</text>
+      <text x="0" y="52" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="24" fill="#f43f5e" letter-spacing="-0.5">SENJA</text>
+      <text x="0" y="72" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="10" fill="#fbcfe8" letter-spacing="1">WHERE MEMORIES COLLIDE</text>
+    </g>
+  </svg>`,
+
+      'J3': `<svg class="film-poster-svg" viewBox="0 0 300 450" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="spaceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#030712"/>
+        <stop offset="50%" stop-color="#0f172a"/>
+        <stop offset="85%" stop-color="#1e1b4b"/>
+        <stop offset="100%" stop-color="#312e81"/>
+      </linearGradient>
+      <radialGradient id="nebulaGlow" cx="60%" cy="35%" r="45%">
+        <stop offset="0%" stop-color="#818cf8" stop-opacity="0.45"/>
+        <stop offset="60%" stop-color="#4f46e5" stop-opacity="0.15"/>
+        <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <rect width="300" height="450" fill="url(#spaceGrad)"/>
+    <circle cx="180" cy="150" r="140" fill="url(#nebulaGlow)"/>
+    <!-- Starlight Constellation -->
+    <g stroke="#38bdf8" stroke-width="0.8" opacity="0.6">
+      <line x1="70" y1="80" x2="130" y2="60"/>
+      <line x1="130" y1="60" x2="180" y2="90"/>
+      <line x1="180" y1="90" x2="230" y2="65"/>
+      <line x1="180" y1="90" x2="170" y2="150"/>
+      <line x1="170" y1="150" x2="110" y2="160"/>
+    </g>
+    <circle cx="70" cy="80" r="2.5" fill="#fff"/>
+    <circle cx="130" cy="60" r="3" fill="#fff"/>
+    <circle cx="180" cy="90" r="3.5" fill="#fff"/>
+    <circle cx="230" cy="65" r="2.5" fill="#fff"/>
+    <circle cx="170" cy="150" r="3" fill="#38bdf8"/>
+    <circle cx="110" cy="160" r="2.5" fill="#fff"/>
+    <!-- Luminous Celestial Crescent -->
+    <path d="M190,120 A 45 45 0 0 0 240 195 A 48 48 0 1 1 190 120 Z" fill="#38bdf8" opacity="0.8"/>
+    <!-- Mountain Horizon Silhouettes -->
+    <polygon points="-20,380 60,320 160,370 240,310 320,380 320,450 -20,450" fill="#090d16"/>
+    <polygon points="-20,400 80,360 180,410 270,350 320,390 320,450 -20,450" fill="#04060a"/>
+    <!-- Movie Title Block -->
+    <g transform="translate(20, 290)">
+      <text x="0" y="0" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="9" fill="#38bdf8" letter-spacing="3">A COSMIC ODYSSEY</text>
+      <text x="0" y="26" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="24" fill="#ffffff" letter-spacing="-0.5">MALAM</text>
+      <text x="0" y="52" font-family="'Plus Jakarta Sans', sans-serif" font-weight="800" font-size="24" fill="#a5b4fc" letter-spacing="-0.5">BINTANG</text>
+      <text x="0" y="72" font-family="'Plus Jakarta Sans', sans-serif" font-weight="500" font-size="10" fill="#cbd5e1" letter-spacing="1">JOURNEY ACROSS INFINITY</text>
+    </g>
+  </svg>`
+    };
+
+    /* PRESET DETAILS FOR EXTRA CINEMA METADATA */
+    const FILM_INFO = {
+      'J1': { rating: 'PG-13', duration: '120 Menit', genre: 'Sci-Fi / Adventure', sound: 'Dolby Atmos' },
+      'J2': { rating: '13+', duration: '105 Menit', genre: 'Drama / Neo-Noir', sound: 'Cinema 2D' },
+      'J3': { rating: 'SU', duration: '135 Menit', genre: 'Mystery / Sci-Fi', sound: 'Surround 7.1' }
+    };
+
+    /* LOAD JADWAL FROM GATEWAY */
+    async function muatJadwal() {
+      try {
+        const d = await (await fetch('/api/jadwal')).json();
+        jadwalList = d.jadwal || [];
+        $('statJadwal').textContent = jadwalList.length;
+        await renderFilmCards();
+        if (jadwalList.length) pilihJadwal(jadwalList[0].id);
+        hitungTersedia();
+      } catch (err) {
+        $('filmGrid').innerHTML = '<div class="state-empty" style="grid-column:1/-1"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><p>Gagal memuat daftar jadwal. Pastikan server gRPC dan gateway aktif.</p></div>';
+      }
+    }
+
+    /* CALCULATE TOTAL AVAILABLE SEATS ACROSS ALL SCHEDULES */
+    async function hitungTersedia() {
+      let total = 0;
+      for (const j of jadwalList) {
+        try {
+          const res = await (await fetch('/api/kursi?jadwal=' + encodeURIComponent(j.id))).json();
+          total += (res.kursi || []).filter(k => k.status === 'kosong').length;
+        } catch (err) { }
+      }
+      $('statTersedia').textContent = total;
+    }
+
+    /* RENDER MODERN FILM CARDS WITH 2:3 POSTERS */
+    async function renderFilmCards() {
+      const grid = $('filmGrid');
+      grid.innerHTML = '';
+
+      for (let i = 0; i < jadwalList.length; i++) {
+        const j = jadwalList[i];
+        let booked = 0, total = 20;
+        try {
+          const d = await (await fetch('/api/kursi?jadwal=' + encodeURIComponent(j.id))).json();
+          total = (d.kursi || []).length || 20;
+          booked = (d.kursi || []).filter(k => k.status === 'terpesan').length;
+        } catch (err) { }
+
+        const pct = total ? Math.round(booked / total * 100) : 0;
+        const sisa = total - booked;
+        const info = FILM_INFO[j.id] || { rating: 'PG-13', duration: '115 Menit', genre: 'Bioskop Reguler', sound: 'Dolby Atmos' };
+        const posterSvg = POSTERS[j.id] || POSTERS['J1'];
+
+        const card = document.createElement('article');
+        card.className = 'film-card' + (jadwalTerpilih === j.id ? ' active' : '');
+        card.dataset.id = j.id;
+
+        card.innerHTML = `
+      <div class="film-poster-wrap">
+        <span class="film-poster-badge">${esc(info.rating)}</span>
+        <span class="film-poster-studio">${esc(j.studio)}</span>
+        ${posterSvg}
+      </div>
+      <div class="film-card-body">
+        <h3 class="film-title">${esc(j.film)}</h3>
+        <div class="film-meta-tags">
+          <span class="meta-pill">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            ${esc(j.waktu)} WIB
+          </span>
+          <span class="meta-pill">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            ${esc(info.duration)}
+          </span>
+          <span class="meta-pill">${esc(info.genre)}</span>
+        </div>
+        <div class="occ-container">
+          <div class="occ-header">
+            <span class="occ-text">Kapasitas Kursi</span>
+            <span class="occ-count">${sisa} dari ${total} Tersedia</span>
+          </div>
+          <div class="occ-bar">
+            <div class="occ-fill" style="width: ${pct}%"></div>
+          </div>
+        </div>
+        <button class="btn-pilih" data-id="${esc(j.id)}" type="button">
+          ${jadwalTerpilih === j.id ? '✓ Jadwal Terpilih' : 'Pilih Jadwal Ini'}
+        </button>
+      </div>
+    `;
+
+        card.addEventListener('click', () => {
+          pilihJadwal(j.id);
+          const target = document.getElementById('pesan');
+          if (target) target.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        grid.appendChild(card);
+      }
+    }
+
+    /* UPDATE ACTIVE STATE ON FILM CARDS */
+    function updateActiveCard() {
+      document.querySelectorAll('.film-card').forEach(c => {
+        const isAct = c.dataset.id === jadwalTerpilih;
+        c.classList.toggle('active', isAct);
+        const b = c.querySelector('.btn-pilih');
+        if (b) b.textContent = isAct ? '✓ Jadwal Terpilih' : 'Pilih Jadwal Ini';
+      });
+    }
+
+    /* SELECT SCHEDULE, CONNECT REAL-TIME STREAM */
+    function pilihJadwal(id) {
+      jadwalTerpilih = id;
+      terpilih = null;
+      clearMsg();
+      $('kodeBox').classList.remove('show');
+
+      const j = jadwalList.find(x => x.id === id);
+      if (j) {
+        $('seatPanelTitle').textContent = j.film;
+        $('seatPanelMeta').textContent = `${j.waktu} WIB · ${j.studio}`;
+        $('sumFilm').textContent = j.film;
+        $('sumFilm').className = 'val';
+        $('sumWaktu').textContent = j.waktu + ' WIB';
+        $('sumWaktu').className = 'val';
+        $('sumStudio').textContent = j.studio;
+        $('sumStudio').className = 'val';
+      }
+
+      $('sumKursi').textContent = 'Belum dipilih';
+      $('sumKursi').className = 'val empty';
+      updateActiveCard();
+
+      if (es) es.close();
+      setStreamStatus('connecting', 'Menghubungkan Stream...');
+
+      es = new EventSource('/api/stream?jadwal=' + encodeURIComponent(id));
+
+      es.onopen = () => {
+        setStreamStatus('connected', 'Live Stream Terhubung');
+      };
+
+      es.onmessage = e => {
+        try {
+          const d = JSON.parse(e.data);
+          kursiList = d.kursi || [];
+          $('versiLabel').textContent = d.versi;
+          setStreamStatus('connected', 'Live Stream Terhubung');
+          renderKursi();
+        } catch (err) { }
+      };
+
+      es.onerror = () => {
+        setStreamStatus('error', 'Koneksi Terputus (Reconnecting...)');
+      };
+
+      muatKursi();
+    }
+
+    /* FETCH CURRENT SEATS SNAPSHOT */
+    async function muatKursi() {
+      if (!jadwalTerpilih) return;
+      try {
+        const d = await (await fetch('/api/kursi?jadwal=' + encodeURIComponent(jadwalTerpilih))).json();
+        kursiList = d.kursi || [];
+        renderKursi();
+      } catch (err) { }
+    }
+
+    /* RENDER REALISTIC CINEMA SEATS */
+    function renderKursi() {
+      const area = $('seatArea');
+      area.innerHTML = '';
+
+      if (!kursiList.length) {
+        area.innerHTML = '<div class="state-empty"><p>Kursi tidak tersedia untuk jadwal ini.</p></div>';
+        return;
+      }
+
+      ['A', 'B'].forEach(row => {
+        const rd = document.createElement('div');
+        rd.className = 'seat-row';
+
+        const lbl = document.createElement('span');
+        lbl.className = 'row-lbl';
+        lbl.textContent = row;
+        rd.appendChild(lbl);
+
+        const gd = document.createElement('div');
+        gd.className = 'seat-grid';
+
+        kursiList.filter(k => k.id.startsWith(row)).forEach(k => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          const isBooked = k.status === 'terpesan';
+          const isSelected = terpilih === k.id;
+
+          btn.className = 'seat' + (isBooked ? ' booked' : isSelected ? ' selected' : '');
+          btn.textContent = k.id.slice(1);
+          btn.disabled = isBooked;
+
+          btn.setAttribute('aria-label', `Kursi ${k.id}${isBooked ? ', terpesan oleh ' + k.pemesan : ', tersedia'}`);
+          if (isBooked) {
+            btn.title = `Terpesan oleh: ${k.pemesan}`;
+          }
+
+          btn.addEventListener('click', () => {
+            terpilih = k.id;
+            $('sumKursi').textContent = k.id;
+            $('sumKursi').className = 'val seat-badge';
+            clearMsg();
+            renderKursi();
+          });
+
+          gd.appendChild(btn);
+        });
+
+        rd.appendChild(gd);
+        area.appendChild(rd);
+      });
+    }
+
+    /* BOOK SEAT VIA HTTP GATEWAY */
+    async function klikPesan() {
+      const nama = $('nama').value.trim();
+      clearMsg();
+
+      if (!jadwalTerpilih) {
+        showMsg($('pesanMsg'), 'Silakan pilih jadwal film terlebih dahulu.', false);
+        return;
+      }
+      if (!terpilih) {
+        showMsg($('pesanMsg'), 'Silakan pilih satu kursi pada denah studio terlebih dahulu.', false);
+        return;
+      }
+      if (!nama) {
+        showMsg($('pesanMsg'), 'Harap isi nama lengkap pemesan terlebih dahulu.', false);
+        $('nama').focus();
+        return;
+      }
+
+      const btn = $('btnPesan');
+      btn.disabled = true;
+      btn.textContent = 'Memproses Reservasi…';
+
+      try {
+        const body = {
+          jadwal_id: jadwalTerpilih,
+          kursi_id: terpilih,
+          nama: nama,
+          request_id: buatId()
+        };
+
+        const res = await fetch('/api/pesan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        const d = await res.json();
+        showMsg($('pesanMsg'), d.pesan || d.error || 'Terjadi kesalahan sistem.', !!d.sukses);
+
+        if (d.sukses && d.kode_booking) {
+          $('kodeVal').textContent = d.kode_booking;
+          $('kodeBox').classList.add('show');
+          $('kodeBatal').value = d.kode_booking;
+          $('btnSalin').textContent = 'Salin Kode Booking';
+
+          // Reset seat selection after successful booking
+          terpilih = null;
+          $('sumKursi').textContent = 'Belum dipilih';
+          $('sumKursi').className = 'val empty';
+        }
+
+        await muatKursi();
+        hitungTersedia();
+      } catch (err) {
+        showMsg($('pesanMsg'), 'Gagal menghubungi server gRPC atau HTTP Gateway.', false);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Konfirmasi & Pesan Kursi';
+      }
+    }
+
+    /* OPEN CANCEL CONFIRMATION MODAL */
+    function klikBatal() {
+      const nama = $('nama').value.trim();
+      const kode = $('kodeBatal').value.trim().toUpperCase();
+      clearMsg();
+
+      if (!jadwalTerpilih) {
+        showMsg($('pesanMsg'), 'Pilih jadwal film terlebih dahulu.', false);
+        return;
+      }
+      if (!terpilih) {
+        showMsg($('pesanMsg'), 'Pilih kursi yang ingin Anda batalkan pada denah.', false);
+        return;
+      }
+      if (!nama) {
+        showMsg($('pesanMsg'), 'Isi nama pemesan yang sesuai.', false);
+        $('nama').focus();
+        return;
+      }
+      if (!kode) {
+        showMsg($('pesanMsg'), 'Masukkan kode booking untuk membatalkan pesanan.', false);
+        $('kodeBatal').focus();
+        return;
+      }
+
+      pendingBatal = {
+        jadwal_id: jadwalTerpilih,
+        kursi_id: terpilih,
+        nama: nama,
+        request_id: buatId(),
+        kode_booking: kode
+      };
+
+      $('modalKursi').textContent = terpilih;
+      $('modalOverlay').classList.add('show');
+    }
+
+    /* CONFIRM CANCELLATION VIA HTTP GATEWAY */
+    async function konfirmBatal() {
+      if (!pendingBatal) return;
+      tutupModal();
+
+      const btn = $('btnBatal');
+      btn.disabled = true;
+      btn.textContent = 'Membatalkan…';
+
+      try {
+        const res = await fetch('/api/batal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(pendingBatal)
+        });
+
+        const d = await res.json();
+        showMsg($('pesanMsg'), d.pesan || d.error || 'Terjadi kesalahan sistem.', !!d.sukses);
+
+        if (d.sukses) {
+          $('kodeBox').classList.remove('show');
+          $('kodeBatal').value = '';
+          terpilih = null;
+          $('sumKursi').textContent = 'Belum dipilih';
+          $('sumKursi').className = 'val empty';
+        }
+
+        await muatKursi();
+        hitungTersedia();
+      } catch (err) {
+        showMsg($('pesanMsg'), 'Gagal menghubungi server gRPC atau HTTP Gateway.', false);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Batalkan Kursi Terpilih';
+        pendingBatal = null;
+      }
+    }
+
+    /* COPY BOOKING CODE TO CLIPBOARD */
+    async function salinKode() {
+      const code = $('kodeVal').textContent.trim();
+      try {
+        await navigator.clipboard.writeText(code);
+        const btn = $('btnSalin');
+        btn.textContent = 'Tersalin ke Clipboard ✓';
+        setTimeout(() => {
+          btn.textContent = 'Salin Kode Booking';
+        }, 2200);
+      } catch (err) {
+        // Fallback if clipboard API is restricted
+        const input = document.createElement('input');
+        input.value = code;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        $('btnSalin').textContent = 'Tersalin ke Clipboard ✓';
+        setTimeout(() => {
+          $('btnSalin').textContent = 'Salin Kode Booking';
+        }, 2200);
+      }
+    }
+
+    /* MOBILE NAVIGATION MENU TOGGLE */
+    function toggleMenu() {
+      const m = $('mobileMenu');
+      if (m) {
+        m.classList.toggle('active');
+      }
+    }
+
+    /* Periodic Seat Refresh as fallback every 10s */
+    setInterval(() => {
+      if (jadwalTerpilih) muatKursi();
+    }, 10000);
+
+    /* Initial Load */
+    muatJadwal();
+  </script>
 </body>
+
 </html>
