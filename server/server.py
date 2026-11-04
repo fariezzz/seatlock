@@ -257,8 +257,10 @@ class BioskopServicer(pb_grpc.BioskopServicer):
 
 
 def serve(host="0.0.0.0", port=50051, max_workers=20, unix=None):
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=max_workers))
-    pb_grpc.add_BioskopServicer_to_server(BioskopServicer(), server)
+    executor = futures.ThreadPoolExecutor(max_workers=max_workers)
+    servicer = BioskopServicer()
+    server = grpc.server(executor)
+    pb_grpc.add_BioskopServicer_to_server(servicer, server)
     server.add_insecure_port(f"{host}:{port}")
     if unix:
         server.add_insecure_port(f"unix://{unix}")
@@ -268,7 +270,14 @@ def serve(host="0.0.0.0", port=50051, max_workers=20, unix=None):
     try:
         server.wait_for_termination()
     except KeyboardInterrupt:
-        print("\nServer dihentikan.")
+        print("\nMenghentikan server...", flush=True)
+    finally:
+        # Hentikan RPC/stream aktif agar worker tidak menahan proses saat keluar.
+        server.stop(grace=0).wait()
+        executor.shutdown(wait=True, cancel_futures=True)
+        with servicer.lock:
+            servicer.conn.close()
+        print("Server dihentikan.", flush=True)
 
 
 if __name__ == "__main__":
